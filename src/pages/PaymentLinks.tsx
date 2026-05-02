@@ -1,5 +1,5 @@
 import React from "react";
-import { useListPaymentLinks, useCreatePaymentLink, useDeletePaymentLink, getListPaymentLinksQueryKey } from "@workspace/api-client-react";
+import { useListPaymentLinks, useCreatePaymentLink, useDeletePaymentLink, getListPaymentLinksQueryKey } from "@/lib/api";
 import { useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
