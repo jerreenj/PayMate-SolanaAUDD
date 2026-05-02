@@ -1,0 +1,2 @@
+# Exclude server-side code from Vercel frontend build
+server/
