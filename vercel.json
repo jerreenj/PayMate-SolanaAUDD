@@ -1,8 +1,7 @@
 {
-  "buildCommand": "pnpm --filter @workspace/solaudd-proposal run build",
-  "outputDirectory": "app/dist/public",
-  "installCommand": "pnpm install",
-  "framework": null,
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "rewrites": [
     {
       "source": "/(.*)",
