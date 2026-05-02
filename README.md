@@ -45,9 +45,15 @@ The goal is not to build another generic crypto wallet. The goal is to make AUDD
 
 <br />
 
+### Wallet Connection
+
+Connect Phantom or Solflare directly from the dashboard header. Once connected, your live AUDD balance is fetched from Solana mainnet and displayed in real time. No custodial accounts, no seed phrase entry — just your existing Solana wallet, connected in one click.
+
+<br />
+
 ### Dashboard
 
-The central view of your AUDD position. Displays your current balance with live conversions to AUD, USD, and SOL. Shows a summary of sent and received amounts for the period, outstanding invoice totals, and a feed of your most recent transactions. Designed for quick daily review without navigating away.
+The central view of your AUDD position. Displays your current balance with live conversions to AUD, USD, and SOL. Shows a summary of sent and received amounts for the period, outstanding invoice totals, and a feed of your most recent transactions. Your detected location is shown in the header for context.
 
 <br />
 
@@ -77,7 +83,7 @@ Schedule weekly or monthly AUDD payments to any wallet address. Each recurring p
 
 ### Split and Settle
 
-Create a shared expense, add participants, and assign either equal or custom shares in AUDD. Track who has settled and who still owes. Each participant's status updates individually, and the split closes automatically once everyone has paid. Useful for shared team costs, group travel, or client project expenses across multiple parties.
+Create a shared expense, add participants, and assign either equal or custom shares in AUDD. Track who has settled and who still owes. Each participant status updates individually, and the split closes automatically once everyone has paid. Useful for shared team costs, group travel, or client project expenses across multiple parties.
 
 <br />
 
@@ -100,6 +106,7 @@ A complete ledger of every AUDD movement through PayMate, with type icons indica
 | Layer | Technology |
 |---|---|
 | Blockchain | Solana + AUDD stablecoin |
+| Wallet | Phantom, Solflare via Wallet Adapter |
 | Frontend | React 19 + Vite 7 |
 | Language | TypeScript 5 |
 | Styling | Tailwind CSS v4 + shadcn/ui |
@@ -124,7 +131,7 @@ This is intentional. A finance tool should feel precise and trustworthy, not glo
 
 | Period | Milestone |
 |---|---|
-| Weeks 1 and 2 | Solana wallet integration (Phantom, Backpack, Solflare) and live AUDD balance reads via RPC |
+| Weeks 1 and 2 | Solana wallet integration (Phantom, Solflare) and live AUDD balance reads via RPC — complete |
 | Weeks 3 and 4 | On-chain invoice settlement using Solana Pay. Payment confirmation and automatic status updates |
 | Weeks 5 and 6 | Recurring payment execution via a scheduled job. On-chain verification of each payout |
 | Weeks 7 and 8 | Split and Settle on-chain settlement flow. Partial settlement tracking against contract state |
@@ -142,14 +149,13 @@ Applying for the [SolAUDD Superteam Earn Grant Program](https://earn.superteam.f
 
 **What the grant funds:**
 
-- Full Solana wallet adapter integration across all payment flows
 - On-chain invoice settlement using Solana Pay request protocol
 - Recurring payment execution layer with on-chain verification
 - Split and Settle contract settlement and partial payment tracking
 - Public deployment, domain, and infrastructure for 12 months
 - Security review prior to launch
 
-PayMate is the only application built specifically to make AUDD usable as an everyday business payment tool for Australian users. The frontend is complete. The grant funds the on-chain integration that makes it real.
+PayMate is the only application built specifically to make AUDD usable as an everyday business payment tool for Australian users. Wallet connection and live balance reading are already complete. The grant funds the remaining on-chain settlement flows.
 
 ---
 
