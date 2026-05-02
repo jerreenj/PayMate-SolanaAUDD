@@ -1,5 +1,5 @@
 import React from "react";
-import { useListTransactions } from "@workspace/api-client-react";
+import { useListTransactions } from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";

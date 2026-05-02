@@ -1,4 +1,4 @@
-import { useGetDashboardSummary, useGetExchangeRates } from "@workspace/api-client-react";
+import { useGetDashboardSummary, useGetExchangeRates } from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { Link } from "wouter";
