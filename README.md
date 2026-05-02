@@ -21,7 +21,7 @@ Built for the [SolAUDD Grant Program](https://earn.superteam.fun/) — a real wo
 |---|---|
 | Blockchain | Solana + AUDD stablecoin |
 | Frontend | React + Vite + TypeScript |
-| UI | shadcn/ui + Tailwind CSS + Framer Motion |
+| UI | shadcn/ui + Tailwind CSS + Space Mono |
 | Backend | Node.js + Express |
 | Database | PostgreSQL + Drizzle ORM |
 | API | OpenAPI 3.1 + Orval codegen |
@@ -49,6 +49,10 @@ pnpm --filter @workspace/api-server run dev
 pnpm --filter @workspace/solaudd-proposal run dev
 ```
 
+## Deploy on Vercel
+
+A `vercel.json` is included at the root. Import the repo on [vercel.com/new](https://vercel.com/new) and it builds automatically.
+
 ## Why AUDD on Solana
 
 Australian businesses moving money on-chain face fragmented tools, high FX costs, and no programmable AUD. AUDD fixes the asset layer. PayMate fixes the product layer — giving merchants and freelancers the invoicing, treasury, and payment tools they need to actually use AUDD day-to-day.
@@ -56,7 +60,3 @@ Australian businesses moving money on-chain face fragmented tools, high FX costs
 ## Grant
 
 Applying for the [SolAUDD Grant Program](https://earn.superteam.fun/) — AUDD 5,000 requested across a 10-week build to ship PayMate as a publicly available production app.
-
----
-
-Built with [Replit](https://replit.com)
