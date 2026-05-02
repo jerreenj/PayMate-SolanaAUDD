@@ -1,6 +1,12 @@
 {
   "buildCommand": "pnpm --filter @workspace/solaudd-proposal run build",
-  "outputDirectory": "artifacts/solaudd-proposal/dist",
+  "outputDirectory": "app/dist/public",
   "installCommand": "pnpm install",
-  "framework": null
+  "framework": null,
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
 }
