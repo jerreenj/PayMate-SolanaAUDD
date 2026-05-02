@@ -1,6 +1,8 @@
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
 import { GLSLHills } from '@/components/ui/glsl-hills';
+import { WalletButton } from "@/components/WalletButton";
+import { useUserLocation } from "@/hooks/useUserLocation";
 import { cn } from "@/lib/utils";
 
 const navigation = [
@@ -17,6 +19,7 @@ const navigation = [
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const userLocation = useUserLocation();
 
   return (
     <div className="min-h-screen bg-black flex text-white font-mono relative overflow-hidden">
@@ -88,14 +91,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Mobile overlay */}
       {mobileMenuOpen && (
-        <div 
-          className="fixed inset-0 z-30 bg-black/80 backdrop-blur-sm md:hidden" 
+        <div
+          className="fixed inset-0 z-30 bg-black/80 backdrop-blur-sm md:hidden"
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0 max-w-full overflow-y-auto z-10 relative">
+
         {/* Mobile Header */}
         <header className="md:hidden flex items-center justify-between p-4 border-b border-white/10 bg-black">
           <div className="flex items-center gap-2">
@@ -107,6 +111,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <button onClick={() => setMobileMenuOpen(true)} className="text-white/70 text-xs uppercase tracking-widest">
             [MENU]
           </button>
+        </header>
+
+        {/* Desktop Top Bar — wallet + location */}
+        <header className="hidden md:flex items-center justify-end gap-4 px-8 py-3 border-b border-white/10 bg-black/60 backdrop-blur-sm">
+          {userLocation && (
+            <div className="flex items-center gap-2 text-[10px] tracking-widest text-white/50">
+              <span>{userLocation.flag}</span>
+              <span>{userLocation.city}, {userLocation.country}</span>
+            </div>
+          )}
+          <div className="w-px h-4 bg-white/15" />
+          <WalletButton />
         </header>
 
         <div className="flex-1 px-8 py-6 max-w-5xl w-full mx-auto">

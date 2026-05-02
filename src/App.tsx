@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/Layout";
+import { SolanaWalletProvider } from "@/components/SolanaWalletProvider";
 import Landing from "@/pages/Landing";
 import Dashboard from "@/pages/Dashboard";
 import Invoices from "@/pages/Invoices";
@@ -53,9 +54,11 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <AppRoutes />
-        </WouterRouter>
+        <SolanaWalletProvider>
+          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+            <AppRoutes />
+          </WouterRouter>
+        </SolanaWalletProvider>
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>
