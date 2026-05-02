@@ -1,15 +1,11 @@
-# dependencies
+# runtime & build output
 node_modules/
-.pnp
-.pnp.js
-
-# build output
 dist/
 dist-ssr/
 build/
 *.local
 
-# env files
+# environment
 .env
 .env.local
 .env.development.local
@@ -17,7 +13,7 @@ build/
 .env.production.local
 .env.production
 
-# editor
+# editors
 .vscode/*
 !.vscode/extensions.json
 .idea/
@@ -30,14 +26,11 @@ build/
 # OS
 .DS_Store
 Thumbs.db
-desktop.ini
 
 # logs
-logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
-yarn-error.log*
 
-# testing
+# test coverage
 coverage/
