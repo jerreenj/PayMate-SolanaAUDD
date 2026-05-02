@@ -47,3 +47,58 @@ Save wallet addresses with display names, labels, and notes for quick reuse acro
 ### Transactions
 
 A complete ledger of every AUDD movement through PayMate, with type icons indicating whether each entry is an invoice payment, payment link receipt, recurring payout, split contribution, or direct transfer. Filter by date range, type, or contact. Export the full history or any filtered subset to CSV for use in accounting software.
+
+## Tech Stack
+
+| Layer | Choice | Reason |
+|---|---|---|
+| Blockchain | Solana + AUDD | Fast finality, low fees, AUD-denominated stablecoin |
+| Frontend | React 19 + Vite 7 | Fast builds, modern React features, HMR in dev |
+| Language | TypeScript | End-to-end type safety across frontend and backend |
+| Styling | Tailwind CSS v4 + shadcn/ui | Utility-first with accessible, composable components |
+| Typography | Space Mono | Terminal aesthetic, readable at small sizes |
+| Backend | Node.js + Express | Lightweight, easy to deploy, familiar ecosystem |
+| Database | PostgreSQL + Drizzle ORM | Typed queries, migrations, works well on any host |
+| API Contract | OpenAPI 3.1 + Orval codegen | Auto-generated React Query hooks and Zod validators |
+| Deployment | Vercel (frontend) | Zero-config, works with the included vercel.json |
+
+## Project Structure
+
+```
+paymate/
+├── src/                    # React frontend source
+│   ├── pages/              # One file per route (Dashboard, Invoices, etc.)
+│   ├── components/         # Shared UI components and layout
+│   └── lib/                # Utilities, formatters, mock data
+├── server/                 # Express REST API
+│   └── src/
+│       ├── routes/         # One router per feature
+│       └── middleware/     # Auth, validation, logging
+├── public/                 # Static assets (favicon, OG image)
+├── index.html              # Vite entry point
+├── vite.config.ts          # Vite configuration
+├── tsconfig.json           # TypeScript config
+└── vercel.json             # Vercel deployment config
+```
+
+## Getting Started
+
+**Prerequisites:** Node.js 20+, a PostgreSQL database.
+
+```bash
+git clone https://github.com/jerreenj/paymate-audd.git
+cd paymate-audd
+npm install
+npm run dev
+```
+
+The app runs on `http://localhost:5173` by default.
+
+## Deploy to Vercel
+
+1. Go to [vercel.com/new](https://vercel.com/new)
+2. Import `jerreenj/paymate-audd`
+3. Leave all settings at default
+4. Click **Deploy**
+
+Vercel auto-detects Vite, runs `npm run build`, and serves the `dist/` folder. No extra configuration needed.
