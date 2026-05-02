@@ -1,32 +1,15 @@
 {
-  "extends": "./tsconfig.base.json",
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.test.ts"
-  ],
+  "extends": "./config/tsconfig.base.json",
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts"],
   "compilerOptions": {
     "noEmit": true,
     "jsx": "preserve",
-    "lib": [
-      "esnext",
-      "dom",
-      "dom.iterable"
-    ],
+    "lib": ["esnext", "dom", "dom.iterable"],
     "resolveJsonModule": true,
     "allowImportingTsExtensions": true,
     "moduleResolution": "bundler",
-    "types": [
-      "node",
-      "vite/client"
-    ],
-    "paths": {
-      "@/*": [
-        "./src/*"
-      ]
-    }
+    "types": ["node", "vite/client"],
+    "paths": { "@/*": ["./src/*"] }
   }
 }
