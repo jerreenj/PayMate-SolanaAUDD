@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { useGetDashboardSummary, useGetExchangeRates } from "@/lib/api";
+import { useAuddBalance } from "@/hooks/useAuddBalance";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { WalletButton } from "@/components/WalletButton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { Link } from "wouter";
@@ -7,16 +10,12 @@ import { SendModal } from "@/components/SendModal";
 import { ReceiveModal } from "@/components/ReceiveModal";
 
 const DEMO_SUMMARY = {
-  balanceAudd: 4692, balanceAud: 4692, balanceUsd: 3002.88,
-  totalSentAudd: 1450, totalReceivedAudd: 1142,
-  pendingInvoicesCount: 2, pendingInvoicesAudd: 3050,
-  activePaymentLinks: 2, activeRecurring: 2,
+  balanceAudd: 0, balanceAud: 0, balanceUsd: 0,
+  totalSentAudd: 0, totalReceivedAudd: 0,
+  pendingInvoicesCount: 1, pendingInvoicesAudd: 1200,
+  activePaymentLinks: 1, activeRecurring: 1,
   recentTransactions: [
-    { id: "1", type: "receive", counterpartyName: "Workshop Registration", counterpartyWallet: null, amountAudd: 597, createdAt: "2026-04-26T13:31:36.774Z" },
-    { id: "2", type: "send",    counterpartyName: "Sarah Chen",            counterpartyWallet: "7xKL9mN", amountAudd: 250, createdAt: "2026-04-25T13:31:36.774Z" },
-    { id: "3", type: "receive", counterpartyName: "Coffee Tip Jar",        counterpartyWallet: null, amountAudd: 45,  createdAt: "2026-04-18T13:31:36.774Z" },
-    { id: "4", type: "send",    counterpartyName: "Marcus Webb",           counterpartyWallet: "3aBcD",   amountAudd: 1200, createdAt: "2026-04-02T13:31:36.774Z" },
-    { id: "5", type: "receive", counterpartyName: "Priya Kumar",           counterpartyWallet: "9pQrS",   amountAudd: 500,  createdAt: "2026-03-28T13:31:36.774Z" },
+    { id: "demo-1", type: "receive", counterpartyName: "Demo Transaction", counterpartyWallet: null, amountAudd: 250, createdAt: new Date().toISOString(), isDemo: true },
   ],
 };
 const DEMO_RATES = { AUDD_AUD: 1, AUDD_USD: 0.6412, AUDD_SOL: 0.00391, updatedAt: new Date().toISOString() };
@@ -24,8 +23,13 @@ const DEMO_RATES = { AUDD_AUD: 1, AUDD_USD: 0.6412, AUDD_SOL: 0.00391, updatedAt
 export default function Dashboard() {
   const { data: summary, isLoading: loadingSummary } = useGetDashboardSummary({ placeholderData: DEMO_SUMMARY });
   const { data: rates, isLoading: loadingRates } = useGetExchangeRates({ placeholderData: DEMO_RATES });
+  const { balance: auddBalance, loading: balanceLoading } = useAuddBalance();
+  const { connected, publicKey } = useWallet();
   const [sendOpen, setSendOpen] = useState(false);
   const [receiveOpen, setReceiveOpen] = useState(false);
+
+  const displayBalance = connected ? (auddBalance ?? 0) : null;
+  const isLoadingBalance = connected && balanceLoading;
 
   return (
     <div className="space-y-6 md:space-y-10">
@@ -33,6 +37,28 @@ export default function Dashboard() {
         <h2 className="text-[10px] text-white/30 uppercase tracking-widest">AUDD FINANCE TERMINAL</h2>
         <h1 className="text-xl md:text-2xl font-bold text-white">Dashboard</h1>
       </header>
+
+      {/* Wallet Connect CTA — shown prominently when not connected */}
+      {!connected && (
+        <div className="relative border border-white/20 p-6 md:p-8 bg-transparent">
+          <div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-white/40" />
+          <div className="absolute top-0 right-0 w-4 h-4 border-t border-r border-white/40" />
+          <div className="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-white/40" />
+          <div className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-white/40" />
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="space-y-2">
+              <div className="text-[9px] uppercase tracking-widest text-white/40">STEP 1 OF 1</div>
+              <h2 className="text-base md:text-lg font-bold text-white uppercase tracking-wide">Connect Your Wallet</h2>
+              <p className="text-[11px] text-white/50 tracking-widest leading-relaxed max-w-sm">
+                Connect Phantom or Solflare to view your real AUDD balance, send and receive on Solana mainnet, and use all features.
+              </p>
+            </div>
+            <div className="flex-shrink-0">
+              <WalletButton />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Hero Balance Card */}
       <div className="relative border border-white/10 p-4 md:p-8 flex flex-col gap-6 bg-transparent">
@@ -42,24 +68,45 @@ export default function Dashboard() {
         <div className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-white/30" />
 
         <div className="space-y-3">
-          <div className="text-[9px] uppercase tracking-widest text-white/30">TOTAL BALANCE</div>
-          {loadingSummary ? (
+          <div className="flex items-center gap-3">
+            <div className="text-[9px] uppercase tracking-widest text-white/30">AUDD BALANCE</div>
+            {connected && (
+              <div className="text-[8px] uppercase tracking-widest text-white/30 border border-white/20 px-1.5 py-0.5">
+                LIVE · MAINNET
+              </div>
+            )}
+          </div>
+
+          {!connected ? (
+            <div className="text-4xl md:text-5xl font-bold text-white/20 tracking-tight">
+              —
+            </div>
+          ) : isLoadingBalance ? (
             <Skeleton className="h-12 w-48 bg-white/10" />
           ) : (
             <div className="text-4xl md:text-5xl font-bold text-primary tracking-tight tabular-nums">
-              A${summary?.balanceAudd?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? "0.00"}
+              A${displayBalance?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? "0.00"}
             </div>
           )}
-          <div className="flex gap-3">
+
+          {connected && publicKey && (
+            <div className="text-[9px] text-white/30 font-mono tracking-wider truncate max-w-xs">
+              {publicKey.toBase58().slice(0, 8)}...{publicKey.toBase58().slice(-6)}
+            </div>
+          )}
+
+          <div className="flex gap-3 pt-1">
             <button
               onClick={() => setReceiveOpen(true)}
-              className="border-white/30 text-white hover:bg-white hover:text-black font-mono text-[10px] uppercase tracking-widest rounded-none px-3 py-2 border transition-colors"
+              disabled={!connected}
+              className="border-white/30 text-white hover:bg-white hover:text-black font-mono text-[10px] uppercase tracking-widest rounded-none px-3 py-2 border transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             >
               [↙ RECEIVE]
             </button>
             <button
               onClick={() => setSendOpen(true)}
-              className="border-white/30 text-white hover:bg-white hover:text-black font-mono text-[10px] uppercase tracking-widest rounded-none px-3 py-2 border transition-colors"
+              disabled={!connected}
+              className="border-white/30 text-white hover:bg-white hover:text-black font-mono text-[10px] uppercase tracking-widest rounded-none px-3 py-2 border transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             >
               [↗ SEND]
             </button>
@@ -69,35 +116,27 @@ export default function Dashboard() {
         <div className="grid grid-cols-3 gap-4 md:gap-10 border-t border-white/10 pt-4">
           <div className="space-y-1">
             <div className="text-[9px] uppercase tracking-widest text-white/30">SENT</div>
-            {loadingSummary ? (
-              <Skeleton className="h-5 w-16 bg-white/10" />
-            ) : (
-              <div className="text-base md:text-xl font-bold text-white tabular-nums">
-                A${summary?.totalSentAudd?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? "0.00"}
-              </div>
-            )}
+            <div className="text-base md:text-xl font-bold text-white tabular-nums">
+              {connected
+                ? (loadingSummary ? <Skeleton className="h-5 w-16 bg-white/10" /> : `A$${(summary?.totalSentAudd ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`)
+                : <span className="text-white/20">—</span>}
+            </div>
           </div>
           <div className="space-y-1">
             <div className="text-[9px] uppercase tracking-widest text-white/30">RECEIVED</div>
-            {loadingSummary ? (
-              <Skeleton className="h-5 w-16 bg-white/10" />
-            ) : (
-              <div className="text-base md:text-xl font-bold text-white tabular-nums">
-                A${summary?.totalReceivedAudd?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? "0.00"}
-              </div>
-            )}
+            <div className="text-base md:text-xl font-bold text-white tabular-nums">
+              {connected
+                ? (loadingSummary ? <Skeleton className="h-5 w-16 bg-white/10" /> : `A$${(summary?.totalReceivedAudd ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`)
+                : <span className="text-white/20">—</span>}
+            </div>
           </div>
           <div className="space-y-1">
             <div className="text-[9px] uppercase tracking-widest text-white/30">EST. SOL</div>
-            {loadingSummary || loadingRates ? (
-              <Skeleton className="h-5 w-16 bg-white/10" />
-            ) : (
-              <div className="text-base md:text-xl font-bold text-white tabular-nums">
-                {summary?.balanceAudd && rates?.AUDD_SOL
-                  ? (summary.balanceAudd * rates.AUDD_SOL).toLocaleString(undefined, { maximumFractionDigits: 2 })
-                  : "0"}
-              </div>
-            )}
+            <div className="text-base md:text-xl font-bold text-white tabular-nums">
+              {connected && displayBalance != null && rates?.AUDD_SOL
+                ? (displayBalance * rates.AUDD_SOL).toLocaleString(undefined, { maximumFractionDigits: 4 })
+                : <span className="text-white/20">—</span>}
+            </div>
           </div>
         </div>
       </div>
@@ -106,11 +145,14 @@ export default function Dashboard() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         {[
           { label: "PENDING INVOICES", count: summary?.pendingInvoicesCount ?? 0 },
-          { label: "ACTIVE LINKS", count: summary?.activePaymentLinks ?? 0 },
-          { label: "RECURRING", count: summary?.activeRecurring ?? 0 },
-          { label: "SOL VALUE", count: summary?.balanceAudd && rates?.AUDD_SOL
-              ? (summary.balanceAudd * rates.AUDD_SOL).toLocaleString(undefined, { maximumFractionDigits: 4 })
-              : "0" }
+          { label: "ACTIVE LINKS",     count: summary?.activePaymentLinks ?? 0 },
+          { label: "RECURRING",        count: summary?.activeRecurring ?? 0 },
+          {
+            label: "SOL VALUE",
+            count: connected && displayBalance != null && rates?.AUDD_SOL
+              ? (displayBalance * rates.AUDD_SOL).toLocaleString(undefined, { maximumFractionDigits: 4 })
+              : "—"
+          },
         ].map((stat, i) => (
           <div key={i} className="p-3 md:p-4 border border-white/10 bg-transparent flex flex-col justify-center space-y-1">
             <div className="text-[8px] md:text-[9px] uppercase tracking-widest text-white/30 leading-tight">{stat.label}</div>
@@ -124,7 +166,14 @@ export default function Dashboard() {
       {/* Recent Transactions */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-[10px] uppercase tracking-widest text-white/40">RECENT ACTIVITY</h3>
+          <div className="flex items-center gap-3">
+            <h3 className="text-[10px] uppercase tracking-widest text-white/40">RECENT ACTIVITY</h3>
+            {!connected && (
+              <span className="text-[8px] uppercase tracking-widest text-white/30 border border-white/15 px-1.5 py-0.5">
+                DEMO TEMPLATE
+              </span>
+            )}
+          </div>
           <Link href="/transactions" className="text-[10px] uppercase tracking-widest text-white/40 hover:text-white transition-colors">
             [VIEW ALL]
           </Link>
@@ -134,25 +183,30 @@ export default function Dashboard() {
           {loadingSummary ? (
             <div className="p-4 space-y-3">
               <Skeleton className="h-8 w-full bg-white/10" />
-              <Skeleton className="h-8 w-full bg-white/10" />
             </div>
           ) : !summary?.recentTransactions || summary.recentTransactions.length === 0 ? (
             <div className="p-8 text-center text-white/30 text-[11px] uppercase tracking-widest">
-              NO RECENT TRANSACTIONS
+              {connected ? "NO TRANSACTIONS YET" : "CONNECT WALLET TO SEE YOUR ACTIVITY"}
             </div>
           ) : (
             summary.recentTransactions.map((tx: any) => {
               const isReceive = tx.type === "receive" || tx.type === "invoice" || tx.type === "payment_link";
+              const isDemo = !connected;
               return (
-                <div key={tx.id} className="flex items-center justify-between p-3 md:p-4 hover:bg-white/[0.02] transition-colors gap-2">
+                <div key={tx.id} className={`flex items-center justify-between p-3 md:p-4 hover:bg-white/[0.02] transition-colors gap-2 ${isDemo ? "opacity-50" : ""}`}>
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="text-white/50 text-xs flex-shrink-0">{isReceive ? "[←]" : "[→]"}</div>
                     <div className="min-w-0">
-                      <div className="font-bold text-white text-xs truncate">{tx.counterpartyName || tx.counterpartyWallet || "UNKNOWN"}</div>
+                      <div className="flex items-center gap-2">
+                        <div className="font-bold text-white text-xs truncate">{tx.counterpartyName || tx.counterpartyWallet || "UNKNOWN"}</div>
+                        {isDemo && (
+                          <span className="text-[8px] uppercase tracking-widest text-white/30 border border-white/15 px-1 py-0 flex-shrink-0">DEMO</span>
+                        )}
+                      </div>
                       <div className="text-[10px] text-white/40 mt-0.5 tracking-widest uppercase">{format(new Date(tx.createdAt), "dd MMM yyyy")}</div>
                     </div>
                   </div>
-                  <div className={`font-bold text-sm tabular-nums flex-shrink-0 ${isReceive ? "text-primary" : "text-white"}`}>
+                  <div className={`font-bold text-sm tabular-nums flex-shrink-0 ${isReceive ? "text-primary" : "text-white"} ${isDemo ? "opacity-50" : ""}`}>
                     {isReceive ? "+" : "-"}A${tx.amountAudd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                 </div>
@@ -160,6 +214,12 @@ export default function Dashboard() {
             })
           )}
         </div>
+
+        {!connected && (
+          <p className="text-[9px] uppercase tracking-widest text-white/25 text-center pt-1">
+            Connect Phantom or Solflare to see your real transaction history
+          </p>
+        )}
       </div>
 
       <SendModal open={sendOpen} onClose={() => setSendOpen(false)} />
