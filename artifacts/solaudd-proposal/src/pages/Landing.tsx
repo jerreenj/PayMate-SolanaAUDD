@@ -106,9 +106,7 @@ export default function Landing() {
         <div className="container mx-auto px-4 lg:px-8 py-3 lg:py-4 flex items-center justify-between">
           <div className="flex items-center gap-2 lg:gap-4">
             <div className="flex items-center gap-2">
-              <div className="flex h-5 w-5 items-center justify-center border border-white/50 text-[8px] font-bold text-white">
-                PM
-              </div>
+              <img src="/audd-logo-blue.png" alt="AUDD" className="h-5 w-5 object-contain" />
               <span className="text-white text-base lg:text-lg font-bold tracking-widest">PAYMATE</span>
             </div>
             <div className="h-3 lg:h-4 w-px bg-white/30" />
