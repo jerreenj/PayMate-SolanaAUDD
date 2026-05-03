@@ -37,7 +37,7 @@ PayMate is a production-grade AUDD finance application for Australian freelancer
 
 **[paymate-solana.vercel.app](https://paymate-solana.vercel.app)**
 
-The app auto-populates with realistic demo data on first load — invoices, contacts, payment links, recurring payments, splits, and transactions — so you can explore every feature immediately without any setup.
+Each section opens with a single template entry showing the shape of that feature — realistic name, no "Demo" labels. The moment you create your first real item in any section, the template for that section is automatically removed by the server. The transaction ledger and dashboard start clean with no template data at all; your real on-chain activity appears there as soon as your wallet is connected.
 
 ---
 
@@ -55,7 +55,7 @@ The goal is not to build another generic crypto wallet. The goal is to make AUDD
 
 ### Wallet Connection
 
-Connect Phantom or Solflare from the top-right header on every page. Live AUDD balance is read from Solana mainnet RPC in real time. No custodial accounts, no seed phrase entry.
+Connect Phantom or Solflare from the top-right header on every page. Live AUDD balance is read from Solana mainnet RPC and refreshes every 15 seconds. No custodial accounts, no seed phrase entry. Balance, SENT, RECEIVED, and all stats show `—` until a wallet is connected — no fake numbers.
 
 **AUDD Mint:** `AuDDuMCindiXzSrBgUvXL5uJkr5kXRpEhMJPBiSTGzj`
 
@@ -126,14 +126,23 @@ Save wallet addresses with display names, emails, and notes. Reuse them across i
 
 ### Transaction History with CSV Export
 
-A complete ledger of every AUDD movement — direction indicators, counterparty names, dates, and Solscan links for every on-chain transaction.
+A complete ledger of every AUDD movement — green for incoming, red for outgoing, counterparty names, dates, and Solscan links for every on-chain transaction.
 
 **`[EXPORT CSV]`** downloads a clean, properly formatted CSV file for accounting:
 
 ```
 "Date","Type","Counterparty","Amount (AUDD)","TX Signature","Note"
-"2026-04-26T00:00:00.000Z","receive","Workshop Registration","597","","..."
+"2026-05-03T00:00:00.000Z","receive","Sarah Chen","850.00","5xK...wQ","Invoice payment"
 ```
+
+---
+
+## Smart Template System
+
+Each section seeds with one realistic template entry so you can immediately see what the feature looks like. Templates are clearly marked with a yellow `TEMPLATE` badge and dimmed rows. The moment you create a real item in any section, the server automatically deletes the template for that section only — so by the time you have real data, there is no cleanup required.
+
+- The transaction ledger and dashboard activity feed have no template entries at all — they start empty and fill with real on-chain data
+- Dashboard balance, SENT, RECEIVED, and SOL value all show `—` until a wallet is connected
 
 ---
 
@@ -155,9 +164,9 @@ A complete ledger of every AUDD movement — direction indicators, counterparty 
 
 ## Design
 
-Pure black (`#000000`) background. Space Mono throughout. Gold (`#D4A853`) appears only on AUDD amounts. Everything else is white on black.
+Pure black (`#000000`) background. Space Mono throughout. Gold (`#D4A853`) appears only on AUDD amounts. Incoming transactions in green, outgoing in red. Everything else is white on black.
 
-Terminal-meets-mission-control aesthetic. Numbers are legible at a glance. Dense but not cluttered. Full uppercase labels, wide letter spacing, animated pulse status dots, and corner bracket frame accents on every card.
+Terminal-meets-mission-control aesthetic. Numbers are legible at a glance. Dense but not cluttered. Full uppercase labels, wide letter spacing, animated pulse status dots, corner bracket frame accents on every card, and the official AUDD logo in the sidebar.
 
 ---
 
@@ -170,7 +179,7 @@ npm install --legacy-peer-deps --ignore-scripts
 npm run build
 ```
 
-The frontend builds to a fully static Vite output. The API server (`artifacts/api-server`) connects to PostgreSQL and auto-seeds demo data on first boot.
+The frontend builds to a fully static Vite output. The API server (`artifacts/api-server`) connects to PostgreSQL and auto-seeds one template entry per section on first boot.
 
 ---
 
@@ -188,9 +197,13 @@ The frontend builds to a fully static Vite output. The API server (`artifacts/ap
 | ✅ Complete | Toast confirmations with Solscan links on every confirmed on-chain action |
 | ✅ Complete | `[EXPORT CSV]` — Full transaction history as RFC-4180 CSV with proper escaping |
 | ✅ Complete | Payment Requests — create, track, and manage AUDD requests |
-| ✅ Complete | All eight feature modules complete with realistic demo seed data |
+| ✅ Complete | All eight feature modules complete with realistic template seed data |
 | ✅ Complete | Mobile responsive — iPhone Safari and Android Chrome |
 | ✅ Complete | Deployed and live on Vercel with SPA routing |
+| ✅ Complete | Real wallet-only dashboard — balance, SENT, RECEIVED show `—` until connected |
+| ✅ Complete | Green/red color-coded transactions — incoming green, outgoing red |
+| ✅ Complete | Auto-remove template per section when first real item is created |
+| ✅ Complete | AUDD logo in sidebar, MAINNET LIVE pulse indicator |
 | 🔜 Next | AUDD balance auto-refresh after every on-chain transaction |
 | 🔜 Next | Production domain + security audit |
 | 🔜 Next | Public launch and merchant onboarding flow |
@@ -211,8 +224,12 @@ Applying for the **[SolAUDD Superteam Earn Grant Program](https://earn.superteam
 - **On-chain split settlement** — `[SETTLE →]` sends participant share to organizer on mainnet
 - **Solana Pay QR** on dashboard, every payment link card, and every unsettled split participant
 - **CSV export** of complete transaction ledger for accounting and bookkeeping
-- All eight feature modules fully complete with realistic demo data
-- Clean TypeScript codebase — zero type errors, zero placeholder data
+- **Real wallet-only data** — balance and stats show `—` until a Phantom or Solflare wallet is connected; no fake numbers
+- **Green/red transaction colors** — incoming AUDD is green, outgoing is red across all views
+- **Smart template cleanup** — first real item created in any section automatically removes the template for that section only
+- **AUDD branding** — official AUDD logo in sidebar, MAINNET LIVE status indicator
+- All eight feature modules fully complete
+- Clean TypeScript codebase — zero type errors, zero placeholder data in production flows
 - Deployed on Vercel: [paymate-solana.vercel.app](https://paymate-solana.vercel.app)
 
 **What the grant funds:**
