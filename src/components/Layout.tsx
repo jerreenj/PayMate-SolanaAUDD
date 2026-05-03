@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { GLSLHills } from '@/components/ui/glsl-hills';
 import { WalletButton } from "@/components/WalletButton";
 import { useUserLocation } from "@/hooks/useUserLocation";
@@ -19,14 +19,23 @@ const navigation = [
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showBg, setShowBg] = useState(false);
   const userLocation = useUserLocation();
+
+  // Defer WebGL background so page content paints first
+  useEffect(() => {
+    const t = setTimeout(() => setShowBg(true), 200);
+    return () => clearTimeout(t);
+  }, []);
 
   return (
     <div className="min-h-screen bg-black flex text-white font-mono relative overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 opacity-15 pointer-events-none z-0">
-        <GLSLHills />
-      </div>
+      {/* Background — deferred so it never blocks first paint */}
+      {showBg && (
+        <div className="absolute inset-0 opacity-15 pointer-events-none z-0">
+          <GLSLHills />
+        </div>
+      )}
 
       {/* Corner Frame Accents */}
       <div className="fixed top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-white/20 z-30" />
