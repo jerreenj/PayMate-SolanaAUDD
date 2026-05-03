@@ -22,8 +22,8 @@ async function truncateAll() {
 }
 
 export async function seedIfEmpty() {
-  const [{ value: txCount }] = await db.select({ value: count() }).from(transactionsTable);
-  if (Number(txCount) > 0) return;
+  const [{ value: contactCount }] = await db.select({ value: count() }).from(contactsTable);
+  if (Number(contactCount) > 0) return;
 
   const nextMonth = new Date();
   nextMonth.setMonth(nextMonth.getMonth() + 1);
@@ -43,7 +43,7 @@ export async function seedIfEmpty() {
 
   await db.insert(paymentLinksTable).values([
     { label: "Coffee Tip Jar", walletAddress: TEMPLATE_WALLET_A, slug: "template-coffee-tip", amountAudd: null, active: true, totalReceived: "0", paymentCount: 0 },
-  ]);
+  ]).onConflictDoNothing();
 
   await db.insert(paymentRequestsTable).values([
     { toName: "Marcus Webb", toWallet: TEMPLATE_WALLET_B, amountAudd: "250.00", note: "[[template]]", status: "pending" },
