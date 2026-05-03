@@ -279,14 +279,14 @@ export default function Splits() {
                         : null;
 
                       return (
-                        <div key={idx} className="p-4 border border-white/10 bg-transparent flex flex-col justify-between gap-3">
+                        <div key={idx} className={`p-4 border bg-transparent flex flex-col justify-between gap-3 transition-colors ${p.settled ? "border-green-500/40 bg-green-500/[0.04]" : "border-yellow-400/30 bg-yellow-400/[0.03]"}`}>
                           <div className="flex items-center gap-3">
-                            <div className="border border-white/20 h-6 w-6 flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0">{getInitials(p.name)}</div>
-                            <div className="font-bold text-xs text-white uppercase truncate">{p.name}</div>
+                            <div className={`border h-6 w-6 flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${p.settled ? "border-green-500/50 text-green-400" : "border-yellow-400/50 text-yellow-300"}`}>{getInitials(p.name)}</div>
+                            <div className={`font-bold text-xs uppercase truncate ${p.settled ? "text-green-400" : "text-white"}`}>{p.name}</div>
                           </div>
-                          <div className="text-sm font-bold text-primary tabular-nums">A${p.shareAudd}</div>
+                          <div className={`text-sm font-bold tabular-nums ${p.settled ? "text-green-400" : "text-primary"}`}>A${p.shareAudd}</div>
                           {p.settled ? (
-                            <span className="text-[9px] uppercase tracking-widest text-white/40">[SETTLED ✓]</span>
+                            <span className="text-[9px] uppercase tracking-widest text-green-500 font-bold">[SETTLED ✓]</span>
                           ) : (
                             <div className="flex flex-col gap-2">
                               {publicKey && p.walletAddress && organizerWallet && p.walletAddress !== organizerWallet && (
