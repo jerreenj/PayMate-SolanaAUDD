@@ -125,7 +125,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <WalletButton />
         </header>
 
-        <div className="flex-1 px-8 py-6 max-w-5xl w-full mx-auto">
+        <div className="flex-1 px-4 py-4 md:px-8 md:py-6 max-w-5xl w-full mx-auto">
           {children}
         </div>
       </main>
