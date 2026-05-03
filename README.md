@@ -8,11 +8,13 @@
 
 <p>
   <a href="https://paymate-solana.vercel.app"><img src="https://img.shields.io/badge/Live%20App-paymate--solana.vercel.app-black?style=for-the-badge&logo=vercel&logoColor=white" /></a>
+  <a href="https://github.com/jerreenj/PayMate-SolanaAUDD"><img src="https://img.shields.io/badge/GitHub-PayMate--SolanaAUDD-181717?style=for-the-badge&logo=github&logoColor=white" /></a>
 </p>
 
 <p>
-  <img src="https://img.shields.io/badge/Solana-9945FF?style=flat-square&logo=solana&logoColor=white" />
+  <img src="https://img.shields.io/badge/Solana-Mainnet-9945FF?style=flat-square&logo=solana&logoColor=white" />
   <img src="https://img.shields.io/badge/AUDD-Stablecoin-D4A853?style=flat-square" />
+  <img src="https://img.shields.io/badge/Solana_Pay-Compatible-00C2FF?style=flat-square" />
   <img src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black" />
   <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white" />
   <img src="https://img.shields.io/badge/Tailwind-v4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" />
@@ -25,9 +27,17 @@
 
 ---
 
-PayMate is a production-grade finance application for Australian freelancers, merchants, and teams who want to send, receive, and manage money using [AUDD](https://audd.io) — the Australian dollar stablecoin built on Solana. It covers the full payment lifecycle: invoices, payment links, recurring payouts, expense splitting, contact management, and a live transaction ledger with CSV export.
+PayMate is a production-grade AUDD finance application for Australian freelancers, merchants, and teams. It covers the full payment lifecycle — invoices, payment links with Solana Pay QR codes, recurring payouts, expense splitting, contact management, real on-chain AUDD transfers, and a live transaction ledger — all settled in Australian dollars on Solana.
 
-This is a working product, not a prototype.
+**This is a working product, not a prototype.** Connect a wallet, send AUDD on mainnet, and scan a Solana Pay QR in under 30 seconds.
+
+---
+
+## Live Demo
+
+**[paymate-solana.vercel.app](https://paymate-solana.vercel.app)**
+
+The app auto-populates with realistic demo data on first load — invoices, contacts, payment links, recurring payments, and transactions — so you can explore every feature immediately without any setup.
 
 ---
 
@@ -35,133 +45,141 @@ This is a working product, not a prototype.
 
 Australian businesses and freelancers moving money on-chain face a fragmented toolset. Crypto wallets handle transfers but not invoicing. Accounting software handles invoicing but not on-chain settlement. Stablecoins like AUDD solve the currency risk problem but leave the product layer completely empty.
 
-PayMate fills that gap. It is purpose-built for AUDD on Solana: a single application that handles every workflow a freelancer, merchant, or small team needs to actually use stablecoin payments in their day-to-day business.
+PayMate fills that gap. It is purpose-built for AUDD on Solana: a single application that handles every workflow a freelancer, merchant, or small team needs to use stablecoin payments day-to-day.
 
 The goal is not to build another generic crypto wallet. The goal is to make AUDD as usable and familiar as a bank transfer, with the programmability and settlement speed of Solana underneath.
 
 ---
 
-## Features
+## What's Built and Working
 
-<br />
+### On-Chain AUDD Send
+
+The SEND button on the dashboard triggers a real SPL token transfer on Solana mainnet. Your connected wallet (Phantom or Solflare) signs the transaction, it is confirmed on-chain, and the record is written to the ledger automatically. A Solscan link is provided on every confirmed transfer.
+
+- Recipient ATA is created automatically if it does not exist
+- Confirmation awaited before recording the transaction
+- Works with any AUDD balance on mainnet
+
+### On-Chain AUDD Receive
+
+The RECEIVE button shows your wallet address with a one-click copy and a scannable Solana Pay QR code. Any Phantom or Solflare user can scan and send AUDD directly to your address in one tap.
 
 ### Wallet Connection
 
-Connect Phantom or Solflare directly from the dashboard header. Once connected, your live AUDD balance is fetched from Solana mainnet and displayed in real time. No custodial accounts, no seed phrase entry — just your existing Solana wallet, connected in one click.
+Connect Phantom or Solflare directly from the dashboard header. Live AUDD balance is read from Solana mainnet RPC in real time. No custodial accounts, no seed phrase entry.
 
-<br />
-
-### Dashboard
-
-The central view of your AUDD position. Displays your current balance with live conversions to AUD, USD, and SOL. Shows a summary of sent and received amounts for the period, outstanding invoice totals, and a feed of your most recent transactions. Your detected location is shown in the header for context.
-
-<br />
+**AUDD Mint:** `AuDDuMCindiXzSrBgUvXL5uJkr5kXRpEhMJPBiSTGzj`
 
 ### Invoices
 
-Create professional invoices payable in AUDD and send them directly to a client wallet address or email. Each invoice supports line items, due dates, and notes. Status tracking covers the full lifecycle: draft, sent, viewed, paid, and overdue. Overdue invoices surface automatically so nothing slips through.
+Create professional invoices payable in AUDD and send them to a client wallet address or email. Tracks the full lifecycle: draft → sent → paid. Overdue invoices surface automatically.
 
-<br />
+### Payment Links with Solana Pay QR
 
-### Payment Links
+Generate a shareable payment link for any AUDD amount. Each link card shows:
 
-Generate a shareable payment link tied to a specific AUDD amount and description. Each link is Solana Pay compatible and can be embedded in emails, websites, or messages. The page for each link shows total received, number of payments, and a full breakdown of who paid and when.
+- An inline Solana Pay QR preview
+- A full-screen QR modal for scanning with any Solana Pay wallet
+- Total received, payment count, and a copyable link URL
 
-<br />
-
-### Payment Requests
-
-Send a direct payment request to any Solana wallet address. Specify the amount, add a note, and track whether it is pending or completed. Useful for ad-hoc requests that do not need a formal invoice, such as expense reimbursements or deposits.
-
-<br />
+Any Phantom, Solflare, or Solana Pay compatible app can scan and pay in one tap.
 
 ### Recurring Payments
 
-Schedule weekly or monthly AUDD payments to any wallet address. Each recurring payment shows the next scheduled date, the total amount sent to date, and the number of payments completed. Toggle any schedule on or off without deleting it. Built for payroll, subscriptions, and regular vendor payments.
-
-<br />
+Schedule weekly or monthly AUDD payments to any wallet address. Track next run date, total paid, and payment count. Toggle any schedule on or off without deleting it.
 
 ### Split and Settle
 
-Create a shared expense, add participants, and assign either equal or custom shares in AUDD. Track who has settled and who still owes. Each participant status updates individually, and the split closes automatically once everyone has paid. Useful for shared team costs, group travel, or client project expenses across multiple parties.
-
-<br />
+Create a shared expense, add participants, and assign AUDD shares. Track who has settled and who still owes. Splits close automatically when all participants have paid.
 
 ### Contacts
 
-Save wallet addresses with display names, labels, and notes for quick reuse across all other features. When creating an invoice, payment link, or recurring payment, select from your contacts instead of pasting a wallet address every time. Contacts can be tagged by type: client, vendor, team member, or other.
+Save wallet addresses with display names and notes. Reuse them across invoices, payment links, recurring payments, and payment requests without re-entering addresses.
 
-<br />
+### Transaction History
 
-### Transactions
-
-A complete ledger of every AUDD movement through PayMate, with type icons indicating whether each entry is an invoice payment, payment link receipt, recurring payout, split contribution, or direct transfer. Filter by date range, type, or contact. Export the full history or any filtered subset to CSV for accounting.
+A complete ledger of every AUDD movement with type indicators, counterparty names, and dates. Export any subset to CSV for accounting.
 
 ---
 
 ## Tech Stack
 
-<br />
-
 | Layer | Technology |
 |---|---|
-| Blockchain | Solana + AUDD stablecoin |
-| Wallet | Phantom, Solflare via Wallet Adapter |
-| Frontend | React 19 + Vite 7 |
-| Language | TypeScript 5 |
-| Styling | Tailwind CSS v4 + shadcn/ui |
-| Typography | Space Mono |
-| Backend | Node.js + Express |
-| Database | PostgreSQL + Drizzle ORM |
-| API Contract | OpenAPI 3.1 + Orval codegen |
+| Blockchain | Solana Mainnet · AUDD SPL Token |
+| Wallet | Phantom · Solflare via `@solana/wallet-adapter` |
+| On-Chain | `@solana/web3.js` · `@solana/spl-token` |
+| Payment QR | Solana Pay URL protocol · `api.qrserver.com` |
+| Frontend | React 19 · Vite 6 · TypeScript 5 |
+| Styling | Tailwind CSS v4 · Space Mono · shadcn/ui |
+| Backend | Node.js · Express |
+| Database | PostgreSQL · Drizzle ORM |
+| Deployment | Vercel (frontend) · Replit (API) |
 
 ---
 
 ## Design
 
-PayMate uses a pure black background with Space Mono throughout. Colour is used sparingly: gold (`#D4A853`) appears only on AUDD amounts and active states. Everything else is white, grey, or off-white on black.
+Pure black (`#000000`) background. Space Mono throughout. Gold (`#D4A853`) appears only on AUDD amounts. Everything else is white on black.
 
-The intent is a terminal-meets-mission-control aesthetic. Numbers are legible at a glance. The interface is dense but not cluttered. Status indicators use a simple pulse dot system. Navigation uses full uppercase labels with wide letter spacing.
+Terminal-meets-mission-control aesthetic. Numbers are legible at a glance. Dense but not cluttered. Full uppercase labels, wide letter spacing, animated pulse status dots, and corner bracket frame accents on every card.
 
-This is intentional. A finance tool should feel precise and trustworthy, not glossy.
+---
+
+## Running Locally
+
+```bash
+git clone https://github.com/jerreenj/PayMate-SolanaAUDD.git
+cd PayMate-SolanaAUDD
+npm install --legacy-peer-deps
+npm run build
+```
+
+The frontend builds as a fully static Vite output — no server required for the UI. The API server connects to a PostgreSQL database and auto-seeds demo data on first boot.
 
 ---
 
 ## Roadmap
 
-| Period | Milestone |
+| Status | Milestone |
 |---|---|
-| Weeks 1 and 2 | Solana wallet integration (Phantom, Solflare) and live AUDD balance reads via RPC — complete |
-| Weeks 3 and 4 | On-chain invoice settlement using Solana Pay. Payment confirmation and automatic status updates |
-| Weeks 5 and 6 | Recurring payment execution via a scheduled job. On-chain verification of each payout |
-| Weeks 7 and 8 | Split and Settle on-chain settlement flow. Partial settlement tracking against contract state |
-| Weeks 9 and 10 | Public launch, performance review, final testing across wallets and devices, documentation |
+| ✅ Complete | Phantom + Solflare wallet connection, live AUDD balance from Solana mainnet |
+| ✅ Complete | Real on-chain AUDD SPL token send — wallet signs and confirms on mainnet |
+| ✅ Complete | Receive modal with wallet address, one-click copy, and Solana Pay QR |
+| ✅ Complete | Solana Pay QR codes on every payment link card and full-screen modal |
+| ✅ Complete | Invoices, Payment Links, Recurring, Splits, Contacts, Transaction History |
+| ✅ Complete | Demo seed data — all pages pre-populated on first boot, no setup needed |
+| ✅ Complete | Mobile responsive — tested on iPhone Safari and Android Chrome |
+| ✅ Complete | Deployed and live on Vercel with SPA routing |
+| 🔜 Next | On-chain invoice settlement via Solana Pay request protocol |
+| 🔜 Next | Recurring payment on-chain execution with cron and on-chain verification |
+| 🔜 Next | Split and Settle on-chain partial settlement tracking |
+| 🔜 Next | Production domain, security audit, and public launch |
 
 ---
 
 ## Grant Application
 
-Applying for the [SolAUDD Superteam Earn Grant Program](https://earn.superteam.fun/).
+Applying for the **[SolAUDD Superteam Earn Grant Program](https://earn.superteam.fun/)**.
 
 **Amount requested:** AUDD 10,000
 
-**Build timeline:** 10 weeks from grant approval to public launch
+**What is already live and working:**
+- Real on-chain AUDD send from any connected wallet — signed and confirmed on mainnet
+- Solana Pay QR receive on the dashboard and every payment link
+- All seven feature modules fully implemented with demo data
+- Clean TypeScript codebase with zero type errors
+- Deployed on Vercel: [paymate-solana.vercel.app](https://paymate-solana.vercel.app)
 
 **What the grant funds:**
+- On-chain invoice settlement using the Solana Pay request protocol
+- Recurring payment execution layer with on-chain verification per payout
+- Split and Settle contract settlement with partial payment tracking
+- 12 months of production infrastructure and domain
+- Security review prior to public launch
 
-- On-chain invoice settlement using Solana Pay request protocol
-- Recurring payment execution layer with on-chain verification
-- Split and Settle contract settlement and partial payment tracking
-- Public deployment, domain, and infrastructure for 12 months
-- Security review prior to launch
-
-PayMate is the only application built specifically to make AUDD usable as an everyday business payment tool for Australian users. Wallet connection and live balance reading are already complete. The grant funds the remaining on-chain settlement flows.
-
----
-
-## Contributing
-
-Pull requests are welcome. For significant changes, open an issue first to discuss what you want to change. The codebase uses TypeScript throughout — please maintain type safety in any contributions.
+PayMate is the only application built specifically to make AUDD usable as an everyday business payment tool for Australian users. The core infrastructure is complete and live. The grant funds the final on-chain automation layer.
 
 ---
 
