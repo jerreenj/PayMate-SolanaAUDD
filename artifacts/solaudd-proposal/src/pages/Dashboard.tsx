@@ -6,9 +6,24 @@ import { Link } from "wouter";
 import { SendModal } from "@/components/SendModal";
 import { ReceiveModal } from "@/components/ReceiveModal";
 
+const DEMO_SUMMARY = {
+  balanceAudd: 4692, balanceAud: 4692, balanceUsd: 3002.88,
+  totalSentAudd: 1450, totalReceivedAudd: 1142,
+  pendingInvoicesCount: 2, pendingInvoicesAudd: 3050,
+  activePaymentLinks: 2, activeRecurring: 2,
+  recentTransactions: [
+    { id: "1", type: "receive", counterpartyName: "Workshop Registration", counterpartyWallet: null, amountAudd: 597, createdAt: "2026-04-26T13:31:36.774Z" },
+    { id: "2", type: "send",    counterpartyName: "Sarah Chen",            counterpartyWallet: "7xKL9mN", amountAudd: 250, createdAt: "2026-04-25T13:31:36.774Z" },
+    { id: "3", type: "receive", counterpartyName: "Coffee Tip Jar",        counterpartyWallet: null, amountAudd: 45,  createdAt: "2026-04-18T13:31:36.774Z" },
+    { id: "4", type: "send",    counterpartyName: "Marcus Webb",           counterpartyWallet: "3aBcD",   amountAudd: 1200, createdAt: "2026-04-02T13:31:36.774Z" },
+    { id: "5", type: "receive", counterpartyName: "Priya Kumar",           counterpartyWallet: "9pQrS",   amountAudd: 500,  createdAt: "2026-03-28T13:31:36.774Z" },
+  ],
+};
+const DEMO_RATES = { AUDD_AUD: 1, AUDD_USD: 0.6412, AUDD_SOL: 0.00391, updatedAt: new Date().toISOString() };
+
 export default function Dashboard() {
-  const { data: summary, isLoading: loadingSummary } = useGetDashboardSummary();
-  const { data: rates, isLoading: loadingRates } = useGetExchangeRates();
+  const { data: summary, isLoading: loadingSummary } = useGetDashboardSummary({ placeholderData: DEMO_SUMMARY });
+  const { data: rates, isLoading: loadingRates } = useGetExchangeRates({ placeholderData: DEMO_RATES });
   const [sendOpen, setSendOpen] = useState(false);
   const [receiveOpen, setReceiveOpen] = useState(false);
 
