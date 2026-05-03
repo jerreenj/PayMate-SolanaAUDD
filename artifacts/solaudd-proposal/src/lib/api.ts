@@ -96,7 +96,11 @@ export function useCreateSplit() {
   return useMutation({ mutationFn: ({ data }: { data: any }) => post<any>("/api/splits", data) });
 }
 export function useSettleSplitParticipant() {
-  return useMutation({ mutationFn: ({ id, data }: { id: string; data: any }) => post<any>(`/api/splits/${id}/settle`, data) });
+  return useMutation({ mutationFn: ({ id, data }: { id: string; data: { walletAddress: string } }) => post<any>(`/api/splits/${id}/settle`, data) });
+}
+
+export function useExecuteRecurring() {
+  return useMutation({ mutationFn: ({ id, data }: { id: string; data: { txSignature: string } }) => post<any>(`/api/recurring/${id}/execute`, data) });
 }
 
 // Contacts
