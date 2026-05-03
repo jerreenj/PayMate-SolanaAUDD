@@ -5,6 +5,8 @@ import { eq } from "drizzle-orm";
 
 const router = Router();
 
+const TEMPLATE_WALLET = "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM";
+
 const fmt = (rp: typeof recurringPaymentsTable.$inferSelect) => ({
   ...rp,
   amountAudd: Number(rp.amountAudd),
@@ -28,6 +30,8 @@ router.post("/recurring", async (req, res) => {
     if (!label || !recipientName || !recipientWallet || !amountAudd || !frequency) {
       return res.status(400).json({ error: "Missing required fields" });
     }
+    // Remove template entries for this section before creating a real one
+    await db.delete(recurringPaymentsTable).where(eq(recurringPaymentsTable.recipientWallet, TEMPLATE_WALLET));
     const nextRunAt = new Date();
     if (frequency === "weekly") {
       nextRunAt.setDate(nextRunAt.getDate() + 7);

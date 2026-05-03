@@ -1,17 +1,14 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { contactsTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { eq, like } from "drizzle-orm";
 
 const router = Router();
 
 router.get("/contacts", async (req, res) => {
   try {
     const contacts = await db.select().from(contactsTable).orderBy(contactsTable.createdAt);
-    res.json(contacts.map(c => ({
-      ...c,
-      createdAt: c.createdAt.toISOString(),
-    })));
+    res.json(contacts.map(c => ({ ...c, createdAt: c.createdAt.toISOString() })));
   } catch (err) {
     req.log.error(err);
     res.status(500).json({ error: "Internal server error" });
@@ -22,6 +19,8 @@ router.post("/contacts", async (req, res) => {
   try {
     const { name, walletAddress, email, note } = req.body;
     if (!name || !walletAddress) return res.status(400).json({ error: "name and walletAddress required" });
+    // Remove template entries for this section before creating a real one
+    await db.delete(contactsTable).where(like(contactsTable.note, "%[[template]]%"));
     const [contact] = await db.insert(contactsTable).values({ name, walletAddress, email, note }).returning();
     res.status(201).json({ ...contact, createdAt: contact.createdAt.toISOString() });
   } catch (err) {

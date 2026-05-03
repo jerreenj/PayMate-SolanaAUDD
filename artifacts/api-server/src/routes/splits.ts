@@ -5,11 +5,18 @@ import { eq } from "drizzle-orm";
 
 const router = Router();
 
+const TEMPLATE_WALLET = "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM";
+
 const fmt = (s: typeof splitsTable.$inferSelect) => ({
   ...s,
   totalAudd: Number(s.totalAudd),
   createdAt: s.createdAt.toISOString(),
 });
+
+function isTemplateSplit(s: typeof splitsTable.$inferSelect) {
+  const participants = s.participants as Array<{ walletAddress: string }>;
+  return participants.some(p => p.walletAddress === TEMPLATE_WALLET);
+}
 
 router.get("/splits", async (req, res) => {
   try {
@@ -25,9 +32,15 @@ router.post("/splits", async (req, res) => {
   try {
     const { title, totalAudd, participants } = req.body;
     if (!title || !totalAudd || !participants) return res.status(400).json({ error: "Missing required fields" });
-    const participantsWithSettled = participants.map((p: { name: string; walletAddress: string; shareAudd: number }) => ({
+    // Remove template splits before creating a real one
+    const existing = await db.select().from(splitsTable);
+    const templateIds = existing.filter(isTemplateSplit).map(s => s.id);
+    for (const id of templateIds) {
+      await db.delete(splitsTable).where(eq(splitsTable.id, id));
+    }
+    const participantsWithSettled = participants.map((p: { name: string; walletAddress: string; shareAudd: number; settled?: boolean }) => ({
       ...p,
-      settled: false,
+      settled: p.settled ?? false,
     }));
     const [split] = await db.insert(splitsTable).values({
       title, totalAudd: String(totalAudd), participants: participantsWithSettled,

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { paymentRequestsTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { eq, like } from "drizzle-orm";
 
 const router = Router();
 
@@ -26,6 +26,8 @@ router.post("/payment-requests", async (req, res) => {
   try {
     const { toName, toWallet, amountAudd, note } = req.body;
     if (!toName || !toWallet || !amountAudd) return res.status(400).json({ error: "Missing required fields" });
+    // Remove template entries for this section before creating a real one
+    await db.delete(paymentRequestsTable).where(like(paymentRequestsTable.note, "%[[template]]%"));
     const [pr] = await db.insert(paymentRequestsTable).values({
       toName, toWallet, amountAudd: String(amountAudd), note, status: "pending",
     }).returning();

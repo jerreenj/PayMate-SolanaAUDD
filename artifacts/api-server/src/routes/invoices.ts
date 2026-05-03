@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { invoicesTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { eq, like } from "drizzle-orm";
 
 const router = Router();
 
@@ -28,6 +28,8 @@ router.post("/invoices", async (req, res) => {
     if (!title || !recipientName || !recipientWallet || !amountAudd) {
       return res.status(400).json({ error: "Missing required fields" });
     }
+    // Remove template entries for this section before creating a real one
+    await db.delete(invoicesTable).where(like(invoicesTable.note, "%[[template]]%"));
     const [inv] = await db.insert(invoicesTable).values({
       title, recipientName, recipientWallet, recipientEmail, amountAudd: String(amountAudd), dueDate, note, status: status || "draft",
     }).returning();
