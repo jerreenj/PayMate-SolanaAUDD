@@ -90,10 +90,6 @@ export default function Landing() {
           data-us-project="OMzqyUv6M3kSnv0JeAtC"
           style={{ width: '100%', height: '100%', minHeight: '100vh' }}
         />
-        {/* Watermark cover — full-width strip at bottom covers UnicornStudio badge wherever it appears */}
-        <div className="absolute bottom-0 left-0 right-0 h-12 bg-black z-10" style={{ pointerEvents: 'none' }} />
-        {/* Also cover bottom-right corner in case badge floats there */}
-        <div className="absolute bottom-0 right-0 w-64 h-16 bg-black z-10" style={{ pointerEvents: 'none' }} />
       </div>
 
       {/* Stars background — mobile fallback */}
