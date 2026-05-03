@@ -1,4 +1,5 @@
 {
+  "installCommand": "echo skip-root-install",
   "buildCommand": "cd artifacts/solaudd-proposal && npm install --legacy-peer-deps && npm run build",
   "outputDirectory": "artifacts/solaudd-proposal/dist/public",
   "rewrites": [
