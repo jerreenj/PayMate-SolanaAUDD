@@ -14,7 +14,12 @@ export default function TransactionHistory() {
     try {
       const response = await fetch('/api/transactions/export');
       if (!response.ok) throw new Error("Export failed");
-      const blob = await response.blob();
+      const rows: { date: string; type: string; counterparty: string; amountAudd: number; txSignature: string; note: string }[] = await response.json();
+      const headers = ["Date", "Type", "Counterparty", "Amount (AUDD)", "TX Signature", "Note"];
+      const escape = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+      const csvRows = rows.map(r => [r.date, r.type, r.counterparty, r.amountAudd, r.txSignature, r.note].map(escape).join(","));
+      const csv = [headers.join(","), ...csvRows].join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -23,7 +28,7 @@ export default function TransactionHistory() {
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
-      toast({ title: "Export successful" });
+      toast({ title: `Exported ${rows.length} transaction${rows.length !== 1 ? "s" : ""}` });
     } catch (error) {
       console.error(error);
       toast({ title: "Export failed", variant: "destructive" });
