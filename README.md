@@ -204,6 +204,8 @@ The frontend builds to a fully static Vite output. The API server (`artifacts/ap
 | ✅ Complete | Green/red color-coded transactions — incoming green, outgoing red |
 | ✅ Complete | Auto-remove template per section when first real item is created |
 | ✅ Complete | AUDD logo in sidebar, MAINNET LIVE pulse indicator |
+| ✅ Complete | Split & Settle — green cards for settled participants, yellow for pending |
+| ✅ Complete | Landing page — clean stars background, no third-party dependencies |
 | 🔜 Next | AUDD balance auto-refresh after every on-chain transaction |
 | 🔜 Next | Production domain + security audit |
 | 🔜 Next | Public launch and merchant onboarding flow |
@@ -214,7 +216,7 @@ The frontend builds to a fully static Vite output. The API server (`artifacts/ap
 
 Applying for the **[SolAUDD Superteam Earn Grant Program](https://earn.superteam.fun/)**.
 
-**Amount requested:** AUDD 10,000
+**Amount requested:** AUDD 9,000
 
 **What is already live and working:**
 
