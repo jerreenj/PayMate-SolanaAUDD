@@ -1,9 +1,11 @@
 {
-  "framework": "vite",
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist/public",
-  "installCommand": "npm install --legacy-peer-deps",
+  "buildCommand": "cd artifacts/solaudd-proposal && npm install --legacy-peer-deps && npm run build",
+  "outputDirectory": "artifacts/solaudd-proposal/dist/public",
   "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://93724b90-42b0-4d1b-95f4-018f3dcf83ba-00-2f3rezdp6ld3z.pike.replit.dev/api/:path*"
+    },
     {
       "source": "/(.*)",
       "destination": "/index.html"
