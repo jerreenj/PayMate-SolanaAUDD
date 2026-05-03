@@ -36,7 +36,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Sidebar */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-40 w-[220px] bg-black/80 backdrop-blur-sm border-r border-white/10 transition-transform duration-200 ease-in-out md:relative md:translate-x-0 h-screen sticky top-0 flex flex-col",
+        "fixed inset-y-0 left-0 z-40 w-[220px] bg-black/80 backdrop-blur-sm border-r border-white/10 transition-transform duration-200 ease-in-out flex flex-col",
+        "md:sticky md:top-0 md:h-screen md:translate-x-0",
         mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <div className="p-6">
