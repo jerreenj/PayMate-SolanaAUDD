@@ -26,10 +26,10 @@ async function patch<T>(path: string, body: unknown): Promise<T> {
   return res.json();
 }
 
-async function del<T>(path: string): Promise<T> {
+async function del(path: string): Promise<void> {
   const res = await fetch(path, { method: "DELETE" });
   if (!res.ok) throw new Error(`${res.status}`);
-  return res.json();
+  // 204 No Content — no body
 }
 
 // Dashboard
@@ -57,6 +57,9 @@ export function useCreateInvoice() {
 export function useMarkInvoicePaid() {
   return useMutation({ mutationFn: ({ id, data }: { id: string; data: any }) => patch<any>(`/api/invoices/${id}/pay`, data) });
 }
+export function useDeleteInvoice() {
+  return useMutation({ mutationFn: ({ id }: { id: string }) => del(`/api/invoices/${id}`) });
+}
 
 // Payment Links
 export function useListPaymentLinks() {
@@ -66,7 +69,7 @@ export function useCreatePaymentLink() {
   return useMutation({ mutationFn: ({ data }: { data: any }) => post<any>("/api/payment-links", data) });
 }
 export function useDeletePaymentLink() {
-  return useMutation({ mutationFn: ({ id }: { id: string }) => del<any>(`/api/payment-links/${id}`) });
+  return useMutation({ mutationFn: ({ id }: { id: string }) => del(`/api/payment-links/${id}`) });
 }
 
 // Payment Requests
@@ -75,6 +78,9 @@ export function useListPaymentRequests() {
 }
 export function useCreatePaymentRequest() {
   return useMutation({ mutationFn: ({ data }: { data: any }) => post<any>("/api/payment-requests", data) });
+}
+export function useDeletePaymentRequest() {
+  return useMutation({ mutationFn: ({ id }: { id: string }) => del(`/api/payment-requests/${id}`) });
 }
 
 // Recurring
@@ -85,7 +91,7 @@ export function useCreateRecurringPayment() {
   return useMutation({ mutationFn: ({ data }: { data: any }) => post<any>("/api/recurring", data) });
 }
 export function useDeleteRecurringPayment() {
-  return useMutation({ mutationFn: ({ id }: { id: string }) => del<any>(`/api/recurring/${id}`) });
+  return useMutation({ mutationFn: ({ id }: { id: string }) => del(`/api/recurring/${id}`) });
 }
 
 // Splits
@@ -94,6 +100,9 @@ export function useListSplits() {
 }
 export function useCreateSplit() {
   return useMutation({ mutationFn: ({ data }: { data: any }) => post<any>("/api/splits", data) });
+}
+export function useDeleteSplit() {
+  return useMutation({ mutationFn: ({ id }: { id: string }) => del(`/api/splits/${id}`) });
 }
 export function useSettleSplitParticipant() {
   return useMutation({ mutationFn: ({ id, data }: { id: string; data: { walletAddress: string } }) => post<any>(`/api/splits/${id}/settle`, data) });
@@ -111,7 +120,7 @@ export function useCreateContact() {
   return useMutation({ mutationFn: ({ data }: { data: any }) => post<any>("/api/contacts", data) });
 }
 export function useDeleteContact() {
-  return useMutation({ mutationFn: ({ id }: { id: string }) => del<any>(`/api/contacts/${id}`) });
+  return useMutation({ mutationFn: ({ id }: { id: string }) => del(`/api/contacts/${id}`) });
 }
 
 // Transactions

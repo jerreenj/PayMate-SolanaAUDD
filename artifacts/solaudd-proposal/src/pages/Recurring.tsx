@@ -11,6 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { useAuddTransfer } from "@/hooks/useAuddTransfer";
 
+const TEMPLATE_WALLET = "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM";
+
 const recurringSchema = z.object({
   label: z.string().min(1, "Label is required"),
   recipientName: z.string().min(1, "Recipient name is required"),
@@ -19,8 +21,13 @@ const recurringSchema = z.object({
   frequency: z.enum(["weekly", "monthly"]),
 });
 
-const TEMPLATE_WALLET = "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM";
 const isTemplate = (p: { recipientWallet?: string }) => p.recipientWallet === TEMPLATE_WALLET;
+
+const TemplateBadge = () => (
+  <span className="inline-flex items-center gap-1 bg-yellow-400/20 border border-yellow-400 text-yellow-300 font-bold text-[9px] uppercase tracking-widest px-2 py-0.5 flex-shrink-0">
+    ★ TEMPLATE
+  </span>
+);
 
 export default function Recurring() {
   const { data: recurring, isLoading } = useListRecurringPayments();
@@ -49,11 +56,11 @@ export default function Recurring() {
     });
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id: string, label = "Removed") => {
     deleteRecurring.mutate({ id }, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListRecurringPaymentsQueryKey() });
-        toast({ title: "Recurring payment removed" });
+        toast({ title: label });
       },
     });
   };
@@ -132,26 +139,34 @@ export default function Recurring() {
         ) : (
           <div className="w-full overflow-x-auto">
             <div className="min-w-[900px]">
-              <div className="grid grid-cols-[1.5fr_1.5fr_1fr_1fr_1fr_1fr_130px] gap-4 px-6 py-4 border-b border-white/10 text-[9px] uppercase tracking-widest text-white/30">
+              <div className="grid grid-cols-[1.5fr_1.5fr_1fr_1fr_1fr_1fr_160px] gap-4 px-6 py-4 border-b border-white/10 text-[9px] uppercase tracking-widest text-white/30">
                 <div>LABEL</div><div>RECIPIENT</div><div className="text-right">AMOUNT</div><div>FREQUENCY</div><div>NEXT RUN</div><div>STATUS</div><div className="text-right">ACTIONS</div>
               </div>
               <div className="divide-y divide-white/5">
                 {recurring.map((plan) => {
                   const demo = isTemplate(plan);
                   return (
-                    <div key={plan.id} className={`grid grid-cols-[1.5fr_1.5fr_1fr_1fr_1fr_1fr_130px] gap-4 px-6 py-4 items-center hover:bg-white/[0.02] transition-colors group ${!plan.active ? "opacity-50" : ""} ${demo ? "opacity-60" : ""}`}>
+                    <div key={plan.id} className={`grid grid-cols-[1.5fr_1.5fr_1fr_1fr_1fr_1fr_160px] gap-4 px-6 py-4 items-center hover:bg-white/[0.02] transition-colors ${demo ? "bg-yellow-400/[0.03]" : ""}`}>
                       <div className="flex items-center gap-2 min-w-0">
                         <div className="font-bold text-xs text-white truncate">{plan.label}</div>
-                        {demo && <span className="border border-yellow-500/60 text-yellow-400 text-[8px] uppercase tracking-widest px-1.5 py-0.5 flex-shrink-0">TEMPLATE</span>}
+                        {demo && <TemplateBadge />}
                       </div>
                       <div className="text-xs text-white/70 truncate">{plan.recipientName}</div>
                       <div className="text-sm font-bold text-primary tabular-nums text-right">A${plan.amountAudd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                       <div className="text-[10px] text-white/70 uppercase tracking-widest">{plan.frequency}</div>
                       <div className="text-[10px] text-white/50 tracking-widest">{format(new Date(plan.nextRunAt), "dd MMM yyyy")}</div>
                       <div><span className={`border px-2 py-1 text-[10px] uppercase tracking-widest ${plan.active ? "border-white/30 text-white/60" : "border-white/10 text-white/30"}`}>{plan.active ? "ACTIVE" : "INACTIVE"}</span></div>
-                      <div className="flex items-center justify-end gap-3">
-                        {plan.active && <button className="text-[10px] uppercase tracking-widest text-white hover:text-primary transition-colors disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap" onClick={() => handleExecute(plan)} disabled={executingId === plan.id}>{execLabel(plan.id)}</button>}
-                        <button className="text-[10px] uppercase text-white/30 hover:text-red-400 transition-colors tracking-widest opacity-0 group-hover:opacity-100" onClick={() => handleDelete(plan.id)}>[DEL]</button>
+                      <div className="flex items-center justify-end gap-2">
+                        {demo ? (
+                          <button className="text-[9px] uppercase tracking-widest text-red-400 hover:text-red-300 border border-red-400/50 hover:border-red-300 px-2 py-1 transition-colors whitespace-nowrap" onClick={() => handleDelete(plan.id, "Template removed")}>
+                            [× REMOVE]
+                          </button>
+                        ) : (
+                          <>
+                            {plan.active && <button className="text-[10px] uppercase tracking-widest text-white hover:text-primary transition-colors disabled:opacity-40 whitespace-nowrap" onClick={() => handleExecute(plan)} disabled={executingId === plan.id}>{execLabel(plan.id)}</button>}
+                            <button className="text-[10px] uppercase text-white/30 hover:text-red-400 transition-colors tracking-widest" onClick={() => handleDelete(plan.id)}>[DEL]</button>
+                          </>
+                        )}
                       </div>
                     </div>
                   );

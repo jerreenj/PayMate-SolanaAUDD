@@ -19,6 +19,12 @@ const contactSchema = z.object({
 function getInitials(name: string) { return name.slice(0, 2).toUpperCase(); }
 const isTemplate = (c: { note?: string | null }) => c.note?.includes("[[template]]") ?? false;
 
+const TemplateBadge = () => (
+  <span className="inline-flex items-center gap-1 bg-yellow-400/20 border border-yellow-400 text-yellow-300 font-bold text-[9px] uppercase tracking-widest px-2 py-0.5">
+    ★ TEMPLATE
+  </span>
+);
+
 export default function Contacts() {
   const { data: contacts, isLoading } = useListContacts();
   const createContact = useCreateContact();
@@ -44,11 +50,11 @@ export default function Contacts() {
     });
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id: string, label = "Contact deleted") => {
     deleteContact.mutate({ id }, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListContactsQueryKey() });
-        toast({ title: "Contact deleted" });
+        toast({ title: label });
       }
     });
   };
@@ -66,25 +72,13 @@ export default function Contacts() {
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
                 <FormField control={form.control} name="name" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-[10px] text-white/50 uppercase tracking-widest">NAME</FormLabel>
-                    <FormControl><input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" placeholder="Alice" {...field} /></FormControl>
-                    <FormMessage className="text-[10px] text-red-400" />
-                  </FormItem>
+                  <FormItem><FormLabel className="text-[10px] text-white/50 uppercase tracking-widest">NAME</FormLabel><FormControl><input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" placeholder="Alice" {...field} /></FormControl><FormMessage className="text-[10px] text-red-400" /></FormItem>
                 )} />
                 <FormField control={form.control} name="walletAddress" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-[10px] text-white/50 uppercase tracking-widest">SOLANA WALLET ADDRESS</FormLabel>
-                    <FormControl><input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" placeholder="Eg. 7X...aT" {...field} /></FormControl>
-                    <FormMessage className="text-[10px] text-red-400" />
-                  </FormItem>
+                  <FormItem><FormLabel className="text-[10px] text-white/50 uppercase tracking-widest">SOLANA WALLET ADDRESS</FormLabel><FormControl><input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" placeholder="Eg. 7X...aT" {...field} /></FormControl><FormMessage className="text-[10px] text-red-400" /></FormItem>
                 )} />
                 <FormField control={form.control} name="email" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-[10px] text-white/50 uppercase tracking-widest">EMAIL (OPTIONAL)</FormLabel>
-                    <FormControl><input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" placeholder="alice@example.com" {...field} /></FormControl>
-                    <FormMessage className="text-[10px] text-red-400" />
-                  </FormItem>
+                  <FormItem><FormLabel className="text-[10px] text-white/50 uppercase tracking-widest">EMAIL (OPTIONAL)</FormLabel><FormControl><input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" placeholder="alice@example.com" {...field} /></FormControl><FormMessage className="text-[10px] text-red-400" /></FormItem>
                 )} />
                 <div className="pt-4">
                   <button type="submit" disabled={createContact.isPending} className="w-full bg-white text-black hover:bg-white/90 font-mono text-[11px] uppercase tracking-widest px-4 py-3 transition-colors">
@@ -108,18 +102,32 @@ export default function Contacts() {
           contacts.map((contact) => {
             const demo = isTemplate(contact);
             return (
-              <div key={contact.id} className={`border border-white/10 p-6 relative group flex flex-col bg-transparent ${demo ? "opacity-60" : ""}`}>
-                <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-white/30" />
-                <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-white/30" />
-                <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-white/30" />
-                <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-white/30" />
-                {demo && <div className="mb-3"><span className="border border-yellow-500/60 text-yellow-400 text-[8px] uppercase tracking-widest px-1.5 py-0.5">TEMPLATE</span></div>}
+              <div key={contact.id} className={`border p-6 relative group flex flex-col bg-transparent transition-all ${demo ? "border-yellow-400/40 opacity-70" : "border-white/10"}`}>
+                <div className={`absolute top-0 left-0 w-3 h-3 border-t border-l ${demo ? "border-yellow-400/50" : "border-white/30"}`} />
+                <div className={`absolute top-0 right-0 w-3 h-3 border-t border-r ${demo ? "border-yellow-400/50" : "border-white/30"}`} />
+                <div className={`absolute bottom-0 left-0 w-3 h-3 border-b border-l ${demo ? "border-yellow-400/50" : "border-white/30"}`} />
+                <div className={`absolute bottom-0 right-0 w-3 h-3 border-b border-r ${demo ? "border-yellow-400/50" : "border-white/30"}`} />
+
+                {demo && (
+                  <div className="mb-3 flex items-center justify-between">
+                    <TemplateBadge />
+                    <button
+                      className="text-[9px] uppercase tracking-widest text-red-400 hover:text-red-300 border border-red-400/50 hover:border-red-300 px-2 py-0.5 transition-colors"
+                      onClick={() => handleDelete(contact.id, "Template removed")}
+                    >
+                      [× REMOVE]
+                    </button>
+                  </div>
+                )}
+
                 <div className="flex items-start gap-4">
-                  <div className="border border-white/20 h-8 w-8 flex items-center justify-center text-[10px] font-bold shrink-0 text-white">{getInitials(contact.name)}</div>
+                  <div className={`border h-8 w-8 flex items-center justify-center text-[10px] font-bold shrink-0 text-white ${demo ? "border-yellow-400/40" : "border-white/20"}`}>{getInitials(contact.name)}</div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start">
                       <h3 className="font-bold text-white truncate text-sm uppercase">{contact.name}</h3>
-                      <button className="text-[9px] uppercase tracking-widest text-white/30 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleDelete(contact.id)}>[DEL]</button>
+                      {!demo && (
+                        <button className="text-[9px] uppercase tracking-widest text-white/30 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleDelete(contact.id)}>[DEL]</button>
+                      )}
                     </div>
                     {contact.email && <div className="text-[10px] text-white/50 mt-1 truncate tracking-widest">{contact.email}</div>}
                   </div>

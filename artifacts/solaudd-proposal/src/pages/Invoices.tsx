@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useListInvoices, useCreateInvoice, useMarkInvoicePaid, getListInvoicesQueryKey } from "@/lib/api";
+import { useListInvoices, useCreateInvoice, useMarkInvoicePaid, useDeleteInvoice, getListInvoicesQueryKey } from "@/lib/api";
 import { useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -22,10 +22,17 @@ const invoiceSchema = z.object({
 
 const isTemplate = (inv: { note?: string | null }) => inv.note?.includes("[[template]]") ?? false;
 
+const TemplateBadge = () => (
+  <span className="inline-flex items-center gap-1 bg-yellow-400/20 border border-yellow-400 text-yellow-300 font-bold text-[9px] uppercase tracking-widest px-2 py-0.5 flex-shrink-0">
+    ★ TEMPLATE
+  </span>
+);
+
 export default function Invoices() {
   const { data: invoices, isLoading } = useListInvoices();
   const createInvoice = useCreateInvoice();
   const markPaid = useMarkInvoicePaid();
+  const deleteInvoice = useDeleteInvoice();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
@@ -49,11 +56,17 @@ export default function Invoices() {
     });
   };
 
+  const handleDelete = (id: string, label = "Invoice deleted") => {
+    deleteInvoice.mutate({ id }, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getListInvoicesQueryKey() });
+        toast({ title: label });
+      },
+    });
+  };
+
   const handlePayInvoice = async (invoice: { id: string; recipientWallet: string; amountAudd: number; title: string }) => {
-    if (!connected) {
-      toast({ title: "Connect a wallet to pay on-chain", variant: "destructive" });
-      return;
-    }
+    if (!connected) { toast({ title: "Connect a wallet to pay on-chain", variant: "destructive" }); return; }
     setPayingId(invoice.id);
     resetTx();
     try {
@@ -61,22 +74,12 @@ export default function Invoices() {
       markPaid.mutate({ id: invoice.id, data: { txSignature: signature } }, {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListInvoicesQueryKey() });
-          toast({
-            title: "Invoice paid on-chain",
-            description: (
-              <a href={`https://solscan.io/tx/${signature}`} target="_blank" rel="noopener noreferrer" className="underline text-white/70">
-                View on Solscan
-              </a>
-            ) as unknown as string,
-          });
+          toast({ title: "Invoice paid on-chain", description: (<a href={`https://solscan.io/tx/${signature}`} target="_blank" rel="noopener noreferrer" className="underline text-white/70">View on Solscan</a>) as unknown as string });
         },
       });
     } catch {
       toast({ title: "Payment failed — check wallet and balance", variant: "destructive" });
-    } finally {
-      setPayingId(null);
-      resetTx();
-    }
+    } finally { setPayingId(null); resetTx(); }
   };
 
   const getStatusBadge = (status: string) => {
@@ -90,7 +93,7 @@ export default function Invoices() {
 
   const payLabel = (id: string) => {
     if (payingId !== id) return "[PAY NOW →]";
-    if (txStatus === "signing")    return "WAITING FOR WALLET...";
+    if (txStatus === "signing") return "WAITING FOR WALLET...";
     if (txStatus === "confirming") return "CONFIRMING...";
     return "[PAY NOW →]";
   };
@@ -111,41 +114,21 @@ export default function Invoices() {
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
                 <FormField control={form.control} name="title" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-[10px] text-white/50 uppercase tracking-widest">DESCRIPTION</FormLabel>
-                    <FormControl><input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" placeholder="Freelance Dev Work" {...field} /></FormControl>
-                    <FormMessage className="text-[10px] text-red-400" />
-                  </FormItem>
+                  <FormItem><FormLabel className="text-[10px] text-white/50 uppercase tracking-widest">DESCRIPTION</FormLabel><FormControl><input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" placeholder="Freelance Dev Work" {...field} /></FormControl><FormMessage className="text-[10px] text-red-400" /></FormItem>
                 )} />
                 <FormField control={form.control} name="amountAudd" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-[10px] text-white/50 uppercase tracking-widest">AMOUNT (AUDD)</FormLabel>
-                    <FormControl><input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" type="number" step="0.01" {...field} /></FormControl>
-                    <FormMessage className="text-[10px] text-red-400" />
-                  </FormItem>
+                  <FormItem><FormLabel className="text-[10px] text-white/50 uppercase tracking-widest">AMOUNT (AUDD)</FormLabel><FormControl><input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" type="number" step="0.01" {...field} /></FormControl><FormMessage className="text-[10px] text-red-400" /></FormItem>
                 )} />
                 <div className="grid grid-cols-2 gap-4">
                   <FormField control={form.control} name="recipientName" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-[10px] text-white/50 uppercase tracking-widest">CLIENT NAME</FormLabel>
-                      <FormControl><input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" placeholder="Acme Corp" {...field} /></FormControl>
-                      <FormMessage className="text-[10px] text-red-400" />
-                    </FormItem>
+                    <FormItem><FormLabel className="text-[10px] text-white/50 uppercase tracking-widest">CLIENT NAME</FormLabel><FormControl><input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" placeholder="Acme Corp" {...field} /></FormControl><FormMessage className="text-[10px] text-red-400" /></FormItem>
                   )} />
                   <FormField control={form.control} name="dueDate" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-[10px] text-white/50 uppercase tracking-widest">DUE DATE</FormLabel>
-                      <FormControl><input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white [color-scheme:dark]" type="date" {...field} /></FormControl>
-                      <FormMessage className="text-[10px] text-red-400" />
-                    </FormItem>
+                    <FormItem><FormLabel className="text-[10px] text-white/50 uppercase tracking-widest">DUE DATE</FormLabel><FormControl><input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white [color-scheme:dark]" type="date" {...field} /></FormControl><FormMessage className="text-[10px] text-red-400" /></FormItem>
                   )} />
                 </div>
                 <FormField control={form.control} name="recipientWallet" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-[10px] text-white/50 uppercase tracking-widest">CLIENT WALLET</FormLabel>
-                    <FormControl><input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" placeholder="Solana Address" {...field} /></FormControl>
-                    <FormMessage className="text-[10px] text-red-400" />
-                  </FormItem>
+                  <FormItem><FormLabel className="text-[10px] text-white/50 uppercase tracking-widest">CLIENT WALLET</FormLabel><FormControl><input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" placeholder="Solana Address" {...field} /></FormControl><FormMessage className="text-[10px] text-red-400" /></FormItem>
                 )} />
                 <div className="pt-4">
                   <button type="submit" disabled={createInvoice.isPending} className="w-full bg-white text-black hover:bg-white/90 font-mono text-[11px] uppercase tracking-widest px-4 py-3 transition-colors">
@@ -167,28 +150,41 @@ export default function Invoices() {
           </div>
         ) : (
           <div className="w-full overflow-x-auto">
-            <div className="min-w-[800px]">
-              <div className="grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_140px] gap-4 px-6 py-4 border-b border-white/10 text-[9px] uppercase tracking-widest text-white/30">
+            <div className="min-w-[860px]">
+              <div className="grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_1fr] gap-4 px-6 py-4 border-b border-white/10 text-[9px] uppercase tracking-widest text-white/30">
                 <div>TITLE</div><div>RECIPIENT</div><div className="text-right">AMOUNT</div><div>DUE DATE</div><div>STATUS</div><div className="text-right">ACTION</div>
               </div>
               <div className="divide-y divide-white/5">
                 {invoices.map((invoice) => {
                   const demo = isTemplate(invoice);
                   return (
-                    <div key={invoice.id} className={`grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_140px] gap-4 px-6 py-4 items-center hover:bg-white/[0.02] transition-colors group ${demo ? "opacity-60" : ""}`}>
+                    <div key={invoice.id} className={`grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_1fr] gap-4 px-6 py-4 items-center hover:bg-white/[0.02] transition-colors ${demo ? "bg-yellow-400/[0.03]" : ""}`}>
                       <div className="flex items-center gap-2 min-w-0">
                         <div className="font-bold text-xs text-white truncate">{invoice.title}</div>
-                        {demo && <span className="border border-yellow-500/60 text-yellow-400 text-[8px] uppercase tracking-widest px-1.5 py-0.5 flex-shrink-0">TEMPLATE</span>}
+                        {demo && <TemplateBadge />}
                       </div>
                       <div className="text-xs text-white/70 truncate">{invoice.recipientName}</div>
                       <div className="text-sm font-bold text-primary tabular-nums text-right">A${invoice.amountAudd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                       <div className="text-xs text-white/50">{invoice.dueDate ? format(new Date(invoice.dueDate), "MMM d, yyyy") : "—"}</div>
                       <div>{getStatusBadge(invoice.status)}</div>
-                      <div className="text-right">
-                        {invoice.status !== "paid" && (
-                          <button className="text-[10px] uppercase tracking-widest text-white hover:text-primary transition-colors disabled:opacity-40 disabled:cursor-not-allowed" onClick={() => handlePayInvoice(invoice)} disabled={payingId === invoice.id}>
-                            {payLabel(invoice.id)}
+                      <div className="flex items-center justify-end gap-2">
+                        {demo ? (
+                          <button
+                            className="text-[9px] uppercase tracking-widest text-red-400 hover:text-red-300 border border-red-400/50 hover:border-red-300 px-2 py-1 transition-colors whitespace-nowrap"
+                            onClick={() => handleDelete(invoice.id, "Template removed")}
+                          >
+                            [× REMOVE]
                           </button>
+                        ) : (
+                          invoice.status !== "paid" && (
+                            <button
+                              className="text-[10px] uppercase tracking-widest text-white hover:text-primary transition-colors disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+                              onClick={() => handlePayInvoice(invoice)}
+                              disabled={payingId === invoice.id}
+                            >
+                              {payLabel(invoice.id)}
+                            </button>
+                          )
                         )}
                       </div>
                     </div>

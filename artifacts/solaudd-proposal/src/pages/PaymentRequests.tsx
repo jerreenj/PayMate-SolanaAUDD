@@ -1,5 +1,5 @@
 import React from "react";
-import { useListPaymentRequests, useCreatePaymentRequest, getListPaymentRequestsQueryKey } from "@/lib/api";
+import { useListPaymentRequests, useCreatePaymentRequest, useDeletePaymentRequest, getListPaymentRequestsQueryKey } from "@/lib/api";
 import { useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -19,9 +19,16 @@ const requestSchema = z.object({
 
 const isTemplate = (r: { note?: string | null }) => r.note?.includes("[[template]]") ?? false;
 
+const TemplateBadge = () => (
+  <span className="inline-flex items-center gap-1 bg-yellow-400/20 border border-yellow-400 text-yellow-300 font-bold text-[9px] uppercase tracking-widest px-2 py-0.5 flex-shrink-0">
+    ★ TEMPLATE
+  </span>
+);
+
 export default function PaymentRequests() {
   const { data: requests, isLoading } = useListPaymentRequests();
   const createRequest = useCreatePaymentRequest();
+  const deleteRequest = useDeletePaymentRequest();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [open, setOpen] = React.useState(false);
@@ -40,6 +47,15 @@ export default function PaymentRequests() {
         form.reset();
       },
       onError: () => toast({ title: "Failed to send request", variant: "destructive" }),
+    });
+  };
+
+  const handleDelete = (id: string, label = "Removed") => {
+    deleteRequest.mutate({ id }, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getListPaymentRequestsQueryKey() });
+        toast({ title: label });
+      },
     });
   };
 
@@ -96,19 +112,19 @@ export default function PaymentRequests() {
           </div>
         ) : (
           <div className="w-full overflow-x-auto">
-            <div className="min-w-[800px]">
-              <div className="grid grid-cols-[1fr_2fr_1fr_1fr_1fr] gap-4 px-6 py-4 border-b border-white/10 text-[9px] uppercase tracking-widest text-white/30">
-                <div>TO</div><div>NOTE</div><div className="text-right">AMOUNT</div><div>DATE</div><div>STATUS</div>
+            <div className="min-w-[860px]">
+              <div className="grid grid-cols-[1fr_2fr_1fr_1fr_1fr_100px] gap-4 px-6 py-4 border-b border-white/10 text-[9px] uppercase tracking-widest text-white/30">
+                <div>TO</div><div>NOTE</div><div className="text-right">AMOUNT</div><div>DATE</div><div>STATUS</div><div className="text-right">ACTION</div>
               </div>
               <div className="divide-y divide-white/5">
                 {requests.map((req) => {
                   const demo = isTemplate(req);
                   return (
-                    <div key={req.id} className={`grid grid-cols-[1fr_2fr_1fr_1fr_1fr] gap-4 px-6 py-4 items-center hover:bg-white/[0.02] transition-colors ${demo ? "opacity-60" : ""}`}>
+                    <div key={req.id} className={`grid grid-cols-[1fr_2fr_1fr_1fr_1fr_100px] gap-4 px-6 py-4 items-center hover:bg-white/[0.02] transition-colors ${demo ? "bg-yellow-400/[0.03]" : ""}`}>
                       <div>
                         <div className="flex items-center gap-2">
                           <div className="font-bold text-xs text-white truncate">{req.toName}</div>
-                          {demo && <span className="border border-yellow-500/60 text-yellow-400 text-[8px] uppercase tracking-widest px-1.5 py-0.5 flex-shrink-0">TEMPLATE</span>}
+                          {demo && <TemplateBadge />}
                         </div>
                         <div className="text-[10px] text-white/40 truncate font-mono mt-1">{req.toWallet}</div>
                       </div>
@@ -116,6 +132,11 @@ export default function PaymentRequests() {
                       <div className="text-sm font-bold text-white tabular-nums text-right">A${req.amountAudd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                       <div className="text-[10px] text-white/50 tracking-widest">{format(new Date(req.createdAt), "dd MMM yyyy")}</div>
                       <div>{getStatusBadge(req.status)}</div>
+                      <div className="flex justify-end">
+                        {demo && (
+                          <button className="text-[9px] uppercase tracking-widest text-red-400 hover:text-red-300 border border-red-400/50 px-2 py-1 transition-colors whitespace-nowrap" onClick={() => handleDelete(req.id, "Template removed")}>[× REMOVE]</button>
+                        )}
+                      </div>
                     </div>
                   );
                 })}

@@ -19,6 +19,12 @@ const linkSchema = z.object({
 
 const isTemplate = (link: { slug?: string }) => link.slug?.startsWith("template") ?? false;
 
+const TemplateBadge = () => (
+  <span className="inline-flex items-center gap-1 bg-yellow-400/20 border border-yellow-400 text-yellow-300 font-bold text-[9px] uppercase tracking-widest px-2 py-0.5 flex-shrink-0">
+    ★ TEMPLATE
+  </span>
+);
+
 function SolanaPayQR({ walletAddress, amountAudd, label }: { walletAddress: string; amountAudd?: number | null; label: string }) {
   const params = new URLSearchParams({ "spl-token": AUDD_MINT, label: `PayMate — ${label}` });
   if (amountAudd) params.set("amount", String(amountAudd));
@@ -54,7 +60,15 @@ export default function PaymentLinks() {
   };
 
   const copyToClipboard = (text: string, label = "Copied") => { navigator.clipboard.writeText(text); toast({ title: label }); };
-  const handleDelete = (id: string) => { deleteLink.mutate({ id }, { onSuccess: () => { queryClient.invalidateQueries({ queryKey: getListPaymentLinksQueryKey() }); toast({ title: "Link deleted" }); } }); };
+
+  const handleDelete = (id: string, label = "Deleted") => {
+    deleteLink.mutate({ id }, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getListPaymentLinksQueryKey() });
+        toast({ title: label });
+      }
+    });
+  };
 
   const selectedLink = links?.find(l => l.id === qrLinkId);
 
@@ -129,16 +143,16 @@ export default function PaymentLinks() {
             const url = `${window.location.origin}/pay/${link.slug}`;
             const demo = isTemplate(link);
             return (
-              <div key={link.id} className={`border border-white/10 p-5 flex flex-col relative bg-transparent ${!link.active ? "opacity-50" : ""} ${demo ? "opacity-60" : ""}`}>
-                <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-white/30" />
-                <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-white/30" />
-                <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-white/30" />
-                <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-white/30" />
+              <div key={link.id} className={`border p-5 flex flex-col relative bg-transparent transition-all ${demo ? "border-yellow-400/40" : "border-white/10"} ${!link.active && !demo ? "opacity-50" : ""}`}>
+                <div className={`absolute top-0 left-0 w-3 h-3 border-t border-l ${demo ? "border-yellow-400/50" : "border-white/30"}`} />
+                <div className={`absolute top-0 right-0 w-3 h-3 border-t border-r ${demo ? "border-yellow-400/50" : "border-white/30"}`} />
+                <div className={`absolute bottom-0 left-0 w-3 h-3 border-b border-l ${demo ? "border-yellow-400/50" : "border-white/30"}`} />
+                <div className={`absolute bottom-0 right-0 w-3 h-3 border-b border-r ${demo ? "border-yellow-400/50" : "border-white/30"}`} />
                 <div className="flex justify-between items-start gap-3 mb-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="text-sm font-bold text-white uppercase tracking-wider truncate">{link.label}</h3>
-                      {demo && <span className="border border-yellow-500/60 text-yellow-400 text-[8px] uppercase tracking-widest px-1.5 py-0.5 flex-shrink-0">TEMPLATE</span>}
+                      {demo && <TemplateBadge />}
                     </div>
                     <div className="flex items-center gap-3 mt-1">
                       <span className="text-lg font-bold text-primary tabular-nums">{link.amountAudd ? `A$${link.amountAudd}` : "OPEN AMOUNT"}</span>
@@ -157,9 +171,15 @@ export default function PaymentLinks() {
                   <div className="flex items-center justify-between gap-2">
                     <div className="text-[10px] text-white/40 truncate flex-1">{url}</div>
                     <div className="flex gap-2 flex-shrink-0">
-                      <button className="text-[10px] uppercase tracking-widest text-white/50 hover:text-white transition-colors" onClick={() => copyToClipboard(url, "Link copied")}>[COPY]</button>
-                      <button className="text-[10px] uppercase tracking-widest text-white/50 hover:text-white transition-colors" onClick={() => setQrLinkId(link.id)}>[QR]</button>
-                      <button className="text-[10px] uppercase tracking-widest text-white/50 hover:text-red-400 transition-colors" onClick={() => handleDelete(link.id)}>[DEL]</button>
+                      {demo ? (
+                        <button className="text-[9px] uppercase tracking-widest text-red-400 hover:text-red-300 border border-red-400/50 px-2 py-0.5 transition-colors" onClick={() => handleDelete(link.id, "Template removed")}>[× REMOVE]</button>
+                      ) : (
+                        <>
+                          <button className="text-[10px] uppercase tracking-widest text-white/50 hover:text-white transition-colors" onClick={() => copyToClipboard(url, "Link copied")}>[COPY]</button>
+                          <button className="text-[10px] uppercase tracking-widest text-white/50 hover:text-white transition-colors" onClick={() => setQrLinkId(link.id)}>[QR]</button>
+                          <button className="text-[10px] uppercase tracking-widest text-white/50 hover:text-red-400 transition-colors" onClick={() => handleDelete(link.id)}>[DEL]</button>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
