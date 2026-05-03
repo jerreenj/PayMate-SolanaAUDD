@@ -1,13 +1,99 @@
+import { useEffect } from 'react';
 import { useLocation } from 'wouter';
+
+declare global {
+  interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    UnicornStudio: any;
+  }
+}
 
 export default function Landing() {
   const [, navigate] = useLocation();
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (window.UnicornStudio) return;
+      window.UnicornStudio = { isInitialized: false };
+      const i = document.createElement('script');
+      i.src = 'https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v1.4.33/dist/unicornStudio.umd.js';
+      i.async = true;
+      i.onload = () => {
+        if (!window.UnicornStudio.isInitialized) {
+          window.UnicornStudio.init();
+          window.UnicornStudio.isInitialized = true;
+        }
+      };
+      (document.head || document.body).appendChild(i);
+
+      // Aggressively hide only the "Made with" branding watermark
+      const style = document.createElement('style');
+      style.id = 'unicorn-hide-style';
+      style.textContent = `
+        [data-us-project] a[href*="unicorn"],
+        [data-us-project] a[href*="unicorn.studio"],
+        [data-us-project] button[title*="unicorn" i],
+        [data-us-project] button[title*="made" i],
+        [data-us-project] div[title*="Made with" i],
+        [data-us-project] .unicorn-brand,
+        [data-us-project] [class*="brand"],
+        [data-us-project] [class*="credit"],
+        [data-us-project] [class*="watermark"],
+        [data-us-project] [class*="badge"] {
+          display: none !important;
+          visibility: hidden !important;
+          opacity: 0 !important;
+          pointer-events: none !important;
+          position: absolute !important;
+          left: -9999px !important;
+          top: -9999px !important;
+        }
+      `;
+      document.head.appendChild(style);
+
+      const hideBranding = () => {
+        document.querySelectorAll('[data-us-project] *').forEach(el => {
+          const text = (el.textContent || '').toLowerCase().trim();
+          const title = (el.getAttribute('title') || '').toLowerCase();
+          const href = (el.getAttribute('href') || '').toLowerCase();
+          if (
+            (text === 'made with unicorn studio' || text === 'made with') ||
+            title.includes('unicorn') ||
+            href.includes('unicorn.studio')
+          ) {
+            (el as HTMLElement).style.cssText =
+              'display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;position:absolute!important;left:-9999px!important;top:-9999px!important;';
+          }
+        });
+      };
+
+      hideBranding();
+      const interval = setInterval(hideBranding, 200);
+      [300, 600, 1000, 2000, 4000].forEach(t => setTimeout(hideBranding, t));
+
+      return () => {
+        clearInterval(interval);
+        const s = document.getElementById('unicorn-hide-style');
+        if (s) s.remove();
+      };
+    }, 80);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-black font-mono">
 
-      {/* Stars background — all screens */}
-      <div className="absolute inset-0 w-full h-full stars-bg" />
+      {/* UnicornStudio animated background — desktop only */}
+      <div className="absolute inset-0 w-full h-full hidden lg:block">
+        <div
+          data-us-project="OMzqyUv6M3kSnv0JeAtC"
+          style={{ width: '100%', height: '100%', minHeight: '100vh' }}
+        />
+      </div>
+
+      {/* Stars background — mobile fallback */}
+      <div className="absolute inset-0 w-full h-full lg:hidden stars-bg" />
 
       {/* Corner frame accents */}
       <div className="absolute top-0 left-0 w-8 h-8 lg:w-12 lg:h-12 border-t-2 border-l-2 border-white/30 z-20" />
@@ -36,7 +122,7 @@ export default function Landing() {
         </div>
       </div>
 
-      {/* Hero */}
+      {/* Hero — mobile: top-aligned below header, desktop: full-screen centered right */}
       <div className="relative z-10 flex lg:min-h-screen lg:items-center lg:justify-end pt-20 pb-12 lg:pt-0 lg:pb-0">
         <div className="w-full lg:w-1/2 px-6 lg:px-16 lg:pr-[10%]">
           <div className="max-w-lg relative lg:ml-auto">
@@ -79,7 +165,7 @@ export default function Landing() {
               </p>
             </div>
 
-            {/* Feature tags */}
+            {/* Feature tags — mobile: 2-col wrap, desktop: row */}
             <div className="flex flex-wrap gap-2 mb-7">
               {['INVOICES', 'PAYMENT LINKS', 'RECURRING', 'SPLIT & SETTLE', 'CONTACTS'].map(f => (
                 <span key={f} className="text-[8px] tracking-widest text-white/70 border border-white/25 px-2 py-0.5">{f}</span>
