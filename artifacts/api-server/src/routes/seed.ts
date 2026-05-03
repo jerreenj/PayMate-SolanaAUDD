@@ -11,6 +11,16 @@ const router = Router();
 const DEMO_WALLET_A = "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM";
 const DEMO_WALLET_B = "7EcDhSYGxXyscszYEp35KHN8vvw3svAuLKTzXwCFLtV1";
 
+async function truncateAll() {
+  await db.delete(transactionsTable);
+  await db.delete(splitsTable);
+  await db.delete(recurringPaymentsTable);
+  await db.delete(paymentRequestsTable);
+  await db.delete(paymentLinksTable);
+  await db.delete(invoicesTable);
+  await db.delete(contactsTable);
+}
+
 export async function seedIfEmpty() {
   const [{ value: txCount }] = await db.select({ value: count() }).from(transactionsTable);
   if (Number(txCount) > 0) return;
@@ -18,7 +28,6 @@ export async function seedIfEmpty() {
   const nextMonth = new Date();
   nextMonth.setMonth(nextMonth.getMonth() + 1);
 
-  // One template entry per section — clearly labelled as demo data
   await db.insert(contactsTable).values([
     { name: "Demo Contact", walletAddress: DEMO_WALLET_A, email: "demo@paymate.template", note: "Template — replace with your real contacts" },
   ]);
@@ -75,6 +84,18 @@ router.post("/seed", async (req, res) => {
   } catch (err) {
     req.log.error(err);
     res.status(500).json({ error: "Seed failed" });
+  }
+});
+
+// Reset: wipe all data and reseed with one template entry per section
+router.post("/seed/reset", async (req, res) => {
+  try {
+    await truncateAll();
+    await seedIfEmpty();
+    res.json({ ok: true, message: "Reset and reseeded with template data" });
+  } catch (err) {
+    req.log.error(err);
+    res.status(500).json({ error: "Reset failed" });
   }
 });
 

@@ -22,7 +22,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [showBg, setShowBg] = useState(false);
   const userLocation = useUserLocation();
 
-  // Defer WebGL background so page content paints first
   useEffect(() => {
     const t = setTimeout(() => setShowBg(true), 200);
     return () => clearTimeout(t);
@@ -30,7 +29,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-black flex text-white font-mono relative overflow-hidden">
-      {/* Background — deferred so it never blocks first paint */}
       {showBg && (
         <div className="absolute inset-0 opacity-15 pointer-events-none z-0">
           <GLSLHills />
@@ -45,57 +43,55 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Sidebar */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-40 w-[220px] bg-black/80 backdrop-blur-sm border-r border-white/10 transition-transform duration-200 ease-in-out flex flex-col",
+        "fixed inset-y-0 left-0 z-40 w-[240px] border-r border-white/15 transition-transform duration-200 ease-in-out flex flex-col",
+        "bg-black/95 backdrop-blur-md",
         "md:sticky md:top-0 md:h-screen md:translate-x-0",
         mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
       )}>
-        <div className="p-6">
+        {/* Logo */}
+        <div className="p-6 border-b border-white/10">
           <div className="flex items-center gap-3">
-            <div className="flex h-6 w-6 items-center justify-center border border-white/30 text-xs">
-              PM
+            <img
+              src="/audd-logo.png"
+              alt="AUDD Logo"
+              className="w-8 h-8 object-contain"
+            />
+            <div>
+              <div className="font-mono font-bold tracking-widest text-sm text-white leading-none">PAYMATE</div>
+              <div className="text-[9px] uppercase tracking-widest text-white/35 mt-0.5">AUDD on Solana</div>
             </div>
-            <span className="font-mono font-bold tracking-widest text-sm text-white">PAYMATE</span>
-          </div>
-          <div className="mt-6 flex items-center justify-center text-white/30 text-xs">
-            ---∞---
           </div>
         </div>
 
-        <nav className="flex-1 px-4 space-y-2 mt-4 overflow-y-auto">
+        {/* Nav */}
+        <nav className="flex-1 px-3 py-5 space-y-0.5 overflow-y-auto">
           {navigation.map((item) => {
             const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
             return (
               <Link key={item.name} href={item.href} onClick={() => setMobileMenuOpen(false)}>
-                <div
-                  className={cn(
-                    "flex items-center justify-between py-2 text-[11px] uppercase tracking-widest cursor-pointer group transition-all",
-                    isActive
-                      ? "text-white border-l-2 border-white pl-3"
-                      : "text-white/65 pl-[14px] hover:text-white"
-                  )}
-                >
+                <div className={cn(
+                  "flex items-center justify-between py-2.5 px-3 text-[11px] uppercase tracking-widest cursor-pointer transition-all rounded-none",
+                  isActive
+                    ? "text-white bg-white/8 border-l-2 border-white"
+                    : "text-white/60 hover:text-white hover:bg-white/5 border-l-2 border-transparent"
+                )}>
                   {item.name}
-                  <div className={cn(
-                    "w-1 h-1",
-                    isActive ? "bg-white" : "bg-white/40"
-                  )} />
+                  <div className={cn("w-1 h-1", isActive ? "bg-white" : "bg-white/25")} />
                 </div>
               </Link>
             );
           })}
         </nav>
 
-        <div className="p-6 mt-auto">
-          <div className="text-[10px] uppercase tracking-widest text-white/30 mb-2">AUDD ON SOLANA</div>
-          <div className="text-[10px] uppercase tracking-widest text-white/30 mb-4">V1.0.0</div>
-          <div className="flex items-center gap-2 text-[10px] text-white/50 tracking-widest">
+        {/* Footer */}
+        <div className="p-5 border-t border-white/10">
+          <div className="flex items-center gap-2 text-[10px] text-white/40 tracking-widest mb-3">
             <div className="flex gap-1">
-              <div className="w-1 h-1 bg-white/50 animate-pulse" />
-              <div className="w-1 h-1 bg-white/50 animate-pulse" style={{ animationDelay: "150ms" }} />
-              <div className="w-1 h-1 bg-white/50 animate-pulse" style={{ animationDelay: "300ms" }} />
+              <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
             </div>
-            SYSTEM.ACTIVE
+            MAINNET LIVE
           </div>
+          <div className="text-[9px] uppercase tracking-widest text-white/20">V1.0.0 · MIT</div>
         </div>
       </aside>
 
@@ -113,9 +109,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {/* Mobile Header */}
         <header className="md:hidden flex items-center justify-between p-4 border-b border-white/10 bg-black">
           <div className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center border border-white/30 text-xs">
-              PM
-            </div>
+            <img src="/audd-logo.png" alt="AUDD" className="w-6 h-6 object-contain" />
             <span className="font-mono font-bold tracking-widest text-sm text-white">PAYMATE</span>
           </div>
           <button onClick={() => setMobileMenuOpen(true)} className="text-white/70 text-xs uppercase tracking-widest">
@@ -123,7 +117,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </button>
         </header>
 
-        {/* Desktop Top Bar — wallet + location */}
+        {/* Desktop Top Bar */}
         <header className="hidden md:flex items-center justify-end gap-4 px-8 py-3 border-b border-white/10 bg-black/60 backdrop-blur-sm">
           {userLocation && (
             <div className="flex items-center gap-2 text-[10px] tracking-widest text-white/50">

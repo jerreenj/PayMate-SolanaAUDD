@@ -20,6 +20,11 @@ const invoiceSchema = z.object({
   dueDate: z.string().optional(),
 });
 
+function isTemplate(item: { title?: string; note?: string; recipientName?: string }) {
+  const fields = [item.title, item.note, item.recipientName].filter(Boolean) as string[];
+  return fields.some(f => f.toLowerCase().includes("demo") || f.toLowerCase().includes("template"));
+}
+
 export default function Invoices() {
   const { data: invoices, isLoading } = useListInvoices();
   const createInvoice = useCreateInvoice();
@@ -177,7 +182,6 @@ export default function Invoices() {
         {isLoading ? (
           <div className="p-6 space-y-4">
             <Skeleton className="h-10 w-full bg-white/10" />
-            <Skeleton className="h-10 w-full bg-white/10" />
           </div>
         ) : !invoices || invoices.length === 0 ? (
           <div className="py-24 text-center flex flex-col items-center justify-center">
@@ -186,7 +190,7 @@ export default function Invoices() {
         ) : (
           <div className="w-full overflow-x-auto">
             <div className="min-w-[800px]">
-              <div className="grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_120px] gap-4 px-6 py-4 border-b border-white/10 text-[9px] uppercase tracking-widest text-white/30">
+              <div className="grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_140px] gap-4 px-6 py-4 border-b border-white/10 text-[9px] uppercase tracking-widest text-white/30">
                 <div>TITLE</div>
                 <div>RECIPIENT</div>
                 <div className="text-right">AMOUNT</div>
@@ -195,30 +199,36 @@ export default function Invoices() {
                 <div className="text-right">ACTION</div>
               </div>
               <div className="divide-y divide-white/5">
-                {invoices.map((invoice) => (
-                  <div key={invoice.id} className="grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_120px] gap-4 px-6 py-4 items-center hover:bg-white/[0.02] transition-colors group">
-                    <div className="font-bold text-xs text-white truncate">{invoice.title}</div>
-                    <div className="text-xs text-white/70 truncate">{invoice.recipientName}</div>
-                    <div className="text-sm font-bold text-primary tabular-nums text-right">
-                      A${invoice.amountAudd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {invoices.map((invoice) => {
+                  const demo = isTemplate(invoice);
+                  return (
+                    <div key={invoice.id} className={`grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_140px] gap-4 px-6 py-4 items-center hover:bg-white/[0.02] transition-colors group ${demo ? "opacity-60" : ""}`}>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className="font-bold text-xs text-white truncate">{invoice.title}</div>
+                        {demo && <span className="border border-yellow-500/60 text-yellow-400 text-[8px] uppercase tracking-widest px-1.5 py-0.5 flex-shrink-0">TEMPLATE</span>}
+                      </div>
+                      <div className="text-xs text-white/70 truncate">{invoice.recipientName}</div>
+                      <div className="text-sm font-bold text-primary tabular-nums text-right">
+                        A${invoice.amountAudd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </div>
+                      <div className="text-xs text-white/50">
+                        {invoice.dueDate ? format(new Date(invoice.dueDate), "MMM d, yyyy") : "—"}
+                      </div>
+                      <div>{getStatusBadge(invoice.status)}</div>
+                      <div className="text-right">
+                        {invoice.status !== "paid" && (
+                          <button
+                            className="text-[10px] uppercase tracking-widest text-white hover:text-primary transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                            onClick={() => handlePayInvoice(invoice)}
+                            disabled={payingId === invoice.id}
+                          >
+                            {payLabel(invoice.id)}
+                          </button>
+                        )}
+                      </div>
                     </div>
-                    <div className="text-xs text-white/50">
-                      {invoice.dueDate ? format(new Date(invoice.dueDate), "MMM d, yyyy") : "—"}
-                    </div>
-                    <div>{getStatusBadge(invoice.status)}</div>
-                    <div className="text-right">
-                      {invoice.status !== "paid" && (
-                        <button
-                          className="text-[10px] uppercase tracking-widest text-white hover:text-primary transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                          onClick={() => handlePayInvoice(invoice)}
-                          disabled={payingId === invoice.id}
-                        >
-                          {payLabel(invoice.id)}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>

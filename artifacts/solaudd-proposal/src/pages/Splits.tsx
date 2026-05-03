@@ -31,17 +31,16 @@ function getInitials(name: string) {
 }
 
 function solanaPay(recipientWallet: string, amount: number, label: string, message: string) {
-  const params = new URLSearchParams({
-    amount: amount.toString(),
-    "spl-token": AUDD_MINT,
-    label: label,
-    message: message,
-  });
+  const params = new URLSearchParams({ amount: amount.toString(), "spl-token": AUDD_MINT, label, message });
   return `solana:${recipientWallet}?${params.toString()}`;
 }
 
 function qrUrl(data: string) {
   return `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(data)}`;
+}
+
+function isTemplate(split: { title?: string }) {
+  return [split.title].filter(Boolean).some(f => f!.toLowerCase().includes("demo") || f!.toLowerCase().includes("template"));
 }
 
 type Participant = { name: string; walletAddress: string; shareAudd: number; settled: boolean };
@@ -60,9 +59,7 @@ export default function Splits() {
   const form = useForm<z.infer<typeof splitSchema>>({
     resolver: zodResolver(splitSchema),
     defaultValues: {
-      title: "",
-      totalAudd: 0,
-      organizerWallet: "",
+      title: "", totalAudd: 0, organizerWallet: "",
       participants: [
         { name: "Me", walletAddress: "", shareAudd: 0, settled: true },
         { name: "", walletAddress: "", shareAudd: 0, settled: false },
@@ -275,10 +272,7 @@ export default function Splits() {
 
       <div className="space-y-6">
         {isLoading ? (
-          <>
-            <Skeleton className="h-48 w-full bg-white/10" />
-            <Skeleton className="h-48 w-full bg-white/10" />
-          </>
+          <Skeleton className="h-48 w-full bg-white/10" />
         ) : !splits || splits.length === 0 ? (
           <div className="py-24 text-center border border-white/10 bg-transparent flex flex-col items-center justify-center">
             <div className="text-[11px] uppercase tracking-widest text-white/30">NO SPLITS YET</div>
@@ -290,9 +284,10 @@ export default function Splits() {
             const totalParticipants = participants.length;
             const isFullySettled = settledCount === totalParticipants;
             const organizerWallet = participants.find(p => p.settled && p.walletAddress)?.walletAddress;
+            const demo = isTemplate(split);
 
             return (
-              <div key={split.id} className={`border border-white/10 p-6 md:p-8 transition-opacity relative bg-transparent ${isFullySettled ? "opacity-60" : ""}`}>
+              <div key={split.id} className={`border border-white/10 p-6 md:p-8 transition-opacity relative bg-transparent ${isFullySettled ? "opacity-60" : ""} ${demo ? "opacity-60" : ""}`}>
                 <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-white/30" />
                 <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-white/30" />
                 <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-white/30" />
@@ -300,8 +295,11 @@ export default function Splits() {
 
                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-8">
                   <div>
-                    <h3 className="text-lg font-bold text-white uppercase tracking-wider">{split.title}</h3>
-                    <div className="text-white/50 mt-2 flex items-center gap-3 text-xs tracking-widest">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="text-lg font-bold text-white uppercase tracking-wider">{split.title}</h3>
+                      {demo && <span className="border border-yellow-500/60 text-yellow-400 text-[8px] uppercase tracking-widest px-1.5 py-0.5">TEMPLATE</span>}
+                    </div>
+                    <div className="text-white/50 flex items-center gap-3 text-xs tracking-widest">
                       <span className="font-bold text-primary tabular-nums">TOTAL: A${split.totalAudd}</span>
                       <span className="text-white/30">|</span>
                       <span>{settledCount}/{totalParticipants} SETTLED</span>
@@ -338,7 +336,6 @@ export default function Splits() {
                             <span className="text-[9px] uppercase tracking-widest text-white/40">[SETTLED ✓]</span>
                           ) : (
                             <div className="flex flex-col gap-2">
-                              {/* On-chain settle: connected wallet pays the organizer */}
                               {publicKey && p.walletAddress && organizerWallet && p.walletAddress !== organizerWallet && (
                                 <button
                                   className="text-[9px] uppercase tracking-widest text-white hover:text-primary transition-colors disabled:opacity-40 text-left"
@@ -348,7 +345,6 @@ export default function Splits() {
                                   {settleLabel(settleKey)}
                                 </button>
                               )}
-                              {/* Solana Pay QR: show QR for participant to scan and pay organizer */}
                               {payUrl && organizerWallet && p.walletAddress !== organizerWallet && (
                                 <button
                                   className="text-[9px] uppercase tracking-widest text-white/50 hover:text-white transition-colors text-left"
@@ -357,7 +353,6 @@ export default function Splits() {
                                   [SHOW QR]
                                 </button>
                               )}
-                              {/* Manual fallback */}
                               <button
                                 className="text-[9px] uppercase tracking-widest text-white/30 hover:text-white/60 transition-colors text-left"
                                 onClick={() => handleMarkSettled(split.id, p.walletAddress)}

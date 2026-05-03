@@ -17,11 +17,12 @@ const linkSchema = z.object({
   walletAddress: z.string().min(32, "Invalid Solana address").max(44, "Invalid Solana address"),
 });
 
+function isTemplate(link: { label?: string }) {
+  return [link.label].filter(Boolean).some(f => f!.toLowerCase().includes("demo") || f!.toLowerCase().includes("template"));
+}
+
 function SolanaPayQR({ walletAddress, amountAudd, label }: { walletAddress: string; amountAudd?: number | null; label: string }) {
-  const params = new URLSearchParams({
-    "spl-token": AUDD_MINT,
-    label: `PayMate — ${label}`,
-  });
+  const params = new URLSearchParams({ "spl-token": AUDD_MINT, label: `PayMate — ${label}` });
   if (amountAudd) params.set("amount", String(amountAudd));
   const solanaPayUrl = `solana:${walletAddress}?${params.toString()}`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(solanaPayUrl)}&size=160x160&format=svg&color=FFFFFF&bgcolor=000000&margin=8`;
@@ -157,20 +158,17 @@ export default function PaymentLinks() {
 
       <div className="grid gap-6 md:grid-cols-2">
         {isLoading ? (
-          <>
-            <Skeleton className="h-56 w-full bg-white/10" />
-            <Skeleton className="h-56 w-full bg-white/10" />
-          </>
+          <Skeleton className="h-56 w-full bg-white/10" />
         ) : !links || links.length === 0 ? (
           <div className="col-span-full py-24 text-center border border-white/10 flex flex-col items-center justify-center gap-3">
             <div className="text-[11px] uppercase tracking-widest text-white/30">NO PAYMENT LINKS YET</div>
-            <div className="text-[10px] text-white/20">Create a Solana Pay link to start accepting AUDD</div>
           </div>
         ) : (
           links.map((link) => {
             const url = `${window.location.origin}/pay/${link.slug}`;
+            const demo = isTemplate(link);
             return (
-              <div key={link.id} className={`border border-white/10 p-5 flex flex-col relative transition-opacity bg-transparent ${!link.active ? "opacity-50" : ""}`}>
+              <div key={link.id} className={`border border-white/10 p-5 flex flex-col relative transition-opacity bg-transparent ${!link.active ? "opacity-50" : ""} ${demo ? "opacity-60" : ""}`}>
                 <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-white/30" />
                 <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-white/30" />
                 <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-white/30" />
@@ -178,8 +176,11 @@ export default function PaymentLinks() {
 
                 <div className="flex justify-between items-start gap-3 mb-4">
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-bold text-white uppercase tracking-wider truncate">{link.label}</h3>
-                    <div className="flex items-center gap-3 mt-2">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-sm font-bold text-white uppercase tracking-wider truncate">{link.label}</h3>
+                      {demo && <span className="border border-yellow-500/60 text-yellow-400 text-[8px] uppercase tracking-widest px-1.5 py-0.5 flex-shrink-0">TEMPLATE</span>}
+                    </div>
+                    <div className="flex items-center gap-3 mt-1">
                       <span className="text-lg font-bold text-primary tabular-nums">
                         {link.amountAudd ? `A$${link.amountAudd}` : "OPEN AMOUNT"}
                       </span>
@@ -205,15 +206,9 @@ export default function PaymentLinks() {
                   <div className="flex items-center justify-between gap-2">
                     <div className="text-[10px] text-white/40 truncate flex-1">{url}</div>
                     <div className="flex gap-2 flex-shrink-0">
-                      <button className="text-[10px] uppercase tracking-widest text-white/50 hover:text-white transition-colors" onClick={() => copyToClipboard(url, "Link copied")}>
-                        [COPY]
-                      </button>
-                      <button className="text-[10px] uppercase tracking-widest text-white/50 hover:text-white transition-colors" onClick={() => setQrLinkId(link.id)}>
-                        [QR]
-                      </button>
-                      <button className="text-[10px] uppercase tracking-widest text-white/50 hover:text-red-400 transition-colors" onClick={() => handleDelete(link.id)}>
-                        [DEL]
-                      </button>
+                      <button className="text-[10px] uppercase tracking-widest text-white/50 hover:text-white transition-colors" onClick={() => copyToClipboard(url, "Link copied")}>[COPY]</button>
+                      <button className="text-[10px] uppercase tracking-widest text-white/50 hover:text-white transition-colors" onClick={() => setQrLinkId(link.id)}>[QR]</button>
+                      <button className="text-[10px] uppercase tracking-widest text-white/50 hover:text-red-400 transition-colors" onClick={() => handleDelete(link.id)}>[DEL]</button>
                     </div>
                   </div>
                 </div>

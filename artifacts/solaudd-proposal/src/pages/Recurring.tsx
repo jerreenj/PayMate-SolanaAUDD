@@ -19,6 +19,11 @@ const recurringSchema = z.object({
   frequency: z.enum(["weekly", "monthly"]),
 });
 
+function isTemplate(plan: { label?: string; recipientName?: string }) {
+  const fields = [plan.label, plan.recipientName].filter(Boolean) as string[];
+  return fields.some(f => f.toLowerCase().includes("demo") || f.toLowerCase().includes("template"));
+}
+
 export default function Recurring() {
   const { data: recurring, isLoading } = useListRecurringPayments();
   const createRecurring = useCreateRecurringPayment();
@@ -180,7 +185,6 @@ export default function Recurring() {
         {isLoading ? (
           <div className="p-6 space-y-4">
             <Skeleton className="h-10 w-full bg-white/10" />
-            <Skeleton className="h-10 w-full bg-white/10" />
           </div>
         ) : !recurring || recurring.length === 0 ? (
           <div className="py-24 text-center flex flex-col items-center justify-center">
@@ -199,41 +203,47 @@ export default function Recurring() {
                 <div className="text-right">ACTIONS</div>
               </div>
               <div className="divide-y divide-white/5">
-                {recurring.map((plan) => (
-                  <div key={plan.id} className={`grid grid-cols-[1.5fr_1.5fr_1fr_1fr_1fr_1fr_130px] gap-4 px-6 py-4 items-center hover:bg-white/[0.02] transition-colors group ${!plan.active ? "opacity-50" : ""}`}>
-                    <div className="font-bold text-xs text-white truncate">{plan.label}</div>
-                    <div className="text-xs text-white/70 truncate">{plan.recipientName}</div>
-                    <div className="text-sm font-bold text-primary tabular-nums text-right">
-                      A${plan.amountAudd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </div>
-                    <div className="text-[10px] text-white/70 uppercase tracking-widest">{plan.frequency}</div>
-                    <div className="text-[10px] text-white/50 tracking-widest">
-                      {format(new Date(plan.nextRunAt), "dd MMM yyyy")}
-                    </div>
-                    <div>
-                      <span className={`border px-2 py-1 text-[10px] uppercase tracking-widest ${plan.active ? "border-white/30 text-white/60" : "border-white/10 text-white/30"}`}>
-                        {plan.active ? "ACTIVE" : "INACTIVE"}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-end gap-3">
-                      {plan.active && (
+                {recurring.map((plan) => {
+                  const demo = isTemplate(plan);
+                  return (
+                    <div key={plan.id} className={`grid grid-cols-[1.5fr_1.5fr_1fr_1fr_1fr_1fr_130px] gap-4 px-6 py-4 items-center hover:bg-white/[0.02] transition-colors group ${!plan.active ? "opacity-50" : ""} ${demo ? "opacity-60" : ""}`}>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className="font-bold text-xs text-white truncate">{plan.label}</div>
+                        {demo && <span className="border border-yellow-500/60 text-yellow-400 text-[8px] uppercase tracking-widest px-1.5 py-0.5 flex-shrink-0">TEMPLATE</span>}
+                      </div>
+                      <div className="text-xs text-white/70 truncate">{plan.recipientName}</div>
+                      <div className="text-sm font-bold text-primary tabular-nums text-right">
+                        A${plan.amountAudd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </div>
+                      <div className="text-[10px] text-white/70 uppercase tracking-widest">{plan.frequency}</div>
+                      <div className="text-[10px] text-white/50 tracking-widest">
+                        {format(new Date(plan.nextRunAt), "dd MMM yyyy")}
+                      </div>
+                      <div>
+                        <span className={`border px-2 py-1 text-[10px] uppercase tracking-widest ${plan.active ? "border-white/30 text-white/60" : "border-white/10 text-white/30"}`}>
+                          {plan.active ? "ACTIVE" : "INACTIVE"}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-end gap-3">
+                        {plan.active && (
+                          <button
+                            className="text-[10px] uppercase tracking-widest text-white hover:text-primary transition-colors disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+                            onClick={() => handleExecute(plan)}
+                            disabled={executingId === plan.id}
+                          >
+                            {execLabel(plan.id)}
+                          </button>
+                        )}
                         <button
-                          className="text-[10px] uppercase tracking-widest text-white hover:text-primary transition-colors disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
-                          onClick={() => handleExecute(plan)}
-                          disabled={executingId === plan.id}
+                          className="text-[10px] uppercase text-white/30 hover:text-red-400 transition-colors tracking-widest opacity-0 group-hover:opacity-100"
+                          onClick={() => handleDelete(plan.id)}
                         >
-                          {execLabel(plan.id)}
+                          [DEL]
                         </button>
-                      )}
-                      <button
-                        className="text-[10px] uppercase text-white/30 hover:text-red-400 transition-colors tracking-widest opacity-0 group-hover:opacity-100"
-                        onClick={() => handleDelete(plan.id)}
-                      >
-                        [DEL]
-                      </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
