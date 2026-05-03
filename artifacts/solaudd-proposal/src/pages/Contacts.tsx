@@ -16,14 +16,8 @@ const contactSchema = z.object({
   note: z.string().optional(),
 });
 
-function getInitials(name: string) {
-  return name.slice(0, 2).toUpperCase();
-}
-
-function isTemplate(contact: { name?: string; email?: string; note?: string }) {
-  const fields = [contact.name, contact.email, contact.note].filter(Boolean) as string[];
-  return fields.some(f => f.toLowerCase().includes("demo") || f.toLowerCase().includes("template"));
-}
+function getInitials(name: string) { return name.slice(0, 2).toUpperCase(); }
+const isTemplate = (c: { note?: string | null }) => c.note?.includes("[[template]]") ?? false;
 
 export default function Contacts() {
   const { data: contacts, isLoading } = useListContacts();
@@ -42,7 +36,7 @@ export default function Contacts() {
     createContact.mutate({ data }, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListContactsQueryKey() });
-        toast({ title: "Contact created successfully" });
+        toast({ title: "Contact created" });
         setOpen(false);
         form.reset();
       },
@@ -62,46 +56,33 @@ export default function Contacts() {
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-[10px] uppercase tracking-widest text-white/40 mb-2">ADDRESS BOOK</h1>
-        </div>
-
+        <h1 className="text-[10px] uppercase tracking-widest text-white/40">ADDRESS BOOK</h1>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <button className="bg-white text-black hover:bg-white/90 font-mono text-[11px] uppercase tracking-widest px-4 py-2 transition-colors">
-              [+ ADD CONTACT]
-            </button>
+            <button className="bg-white text-black hover:bg-white/90 font-mono text-[11px] uppercase tracking-widest px-4 py-2 transition-colors">[+ ADD CONTACT]</button>
           </DialogTrigger>
           <DialogContent className="bg-black border-white/20 text-white sm:max-w-[425px] rounded-none font-mono">
-            <DialogHeader>
-              <DialogTitle className="text-sm font-bold uppercase tracking-widest">NEW CONTACT</DialogTitle>
-            </DialogHeader>
+            <DialogHeader><DialogTitle className="text-sm font-bold uppercase tracking-widest">NEW CONTACT</DialogTitle></DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
                 <FormField control={form.control} name="name" render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-[10px] text-white/50 uppercase tracking-widest">NAME</FormLabel>
-                    <FormControl>
-                      <input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" placeholder="Alice" {...field} />
-                    </FormControl>
+                    <FormControl><input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" placeholder="Alice" {...field} /></FormControl>
                     <FormMessage className="text-[10px] text-red-400" />
                   </FormItem>
                 )} />
                 <FormField control={form.control} name="walletAddress" render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-[10px] text-white/50 uppercase tracking-widest">SOLANA WALLET ADDRESS</FormLabel>
-                    <FormControl>
-                      <input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" placeholder="Eg. 7X...aT" {...field} />
-                    </FormControl>
+                    <FormControl><input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" placeholder="Eg. 7X...aT" {...field} /></FormControl>
                     <FormMessage className="text-[10px] text-red-400" />
                   </FormItem>
                 )} />
                 <FormField control={form.control} name="email" render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-[10px] text-white/50 uppercase tracking-widest">EMAIL (OPTIONAL)</FormLabel>
-                    <FormControl>
-                      <input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" placeholder="alice@example.com" {...field} />
-                    </FormControl>
+                    <FormControl><input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" placeholder="alice@example.com" {...field} /></FormControl>
                     <FormMessage className="text-[10px] text-red-400" />
                   </FormItem>
                 )} />
@@ -132,40 +113,20 @@ export default function Contacts() {
                 <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-white/30" />
                 <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-white/30" />
                 <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-white/30" />
-
-                {demo && (
-                  <div className="mb-3">
-                    <span className="border border-yellow-500/60 text-yellow-400 text-[8px] uppercase tracking-widest px-1.5 py-0.5">TEMPLATE</span>
-                  </div>
-                )}
-
+                {demo && <div className="mb-3"><span className="border border-yellow-500/60 text-yellow-400 text-[8px] uppercase tracking-widest px-1.5 py-0.5">TEMPLATE</span></div>}
                 <div className="flex items-start gap-4">
-                  <div className="border border-white/20 h-8 w-8 flex items-center justify-center text-[10px] font-bold shrink-0 text-white">
-                    {getInitials(contact.name)}
-                  </div>
+                  <div className="border border-white/20 h-8 w-8 flex items-center justify-center text-[10px] font-bold shrink-0 text-white">{getInitials(contact.name)}</div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start">
                       <h3 className="font-bold text-white truncate text-sm uppercase">{contact.name}</h3>
-                      <button
-                        className="text-[9px] uppercase tracking-widest text-white/30 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => handleDelete(contact.id)}
-                      >
-                        [DEL]
-                      </button>
+                      <button className="text-[9px] uppercase tracking-widest text-white/30 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleDelete(contact.id)}>[DEL]</button>
                     </div>
-                    {contact.email && (
-                      <div className="text-[10px] text-white/50 mt-1 truncate tracking-widest">
-                        {contact.email}
-                      </div>
-                    )}
+                    {contact.email && <div className="text-[10px] text-white/50 mt-1 truncate tracking-widest">{contact.email}</div>}
                   </div>
                 </div>
-
                 <div className="mt-6">
                   <div className="text-[9px] uppercase tracking-widest text-white/30 mb-1">WALLET</div>
-                  <div className="text-xs font-mono text-white/70 truncate">
-                    {contact.walletAddress}
-                  </div>
+                  <div className="text-xs font-mono text-white/70 truncate">{contact.walletAddress}</div>
                 </div>
               </div>
             );

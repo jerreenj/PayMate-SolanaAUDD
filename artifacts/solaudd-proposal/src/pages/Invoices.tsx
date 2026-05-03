@@ -20,10 +20,7 @@ const invoiceSchema = z.object({
   dueDate: z.string().optional(),
 });
 
-function isTemplate(item: { title?: string; note?: string; recipientName?: string }) {
-  const fields = [item.title, item.note, item.recipientName].filter(Boolean) as string[];
-  return fields.some(f => f.toLowerCase().includes("demo") || f.toLowerCase().includes("template"));
-}
+const isTemplate = (inv: { note?: string | null }) => inv.note?.includes("[[template]]") ?? false;
 
 export default function Invoices() {
   const { data: invoices, isLoading } = useListInvoices();
@@ -65,7 +62,7 @@ export default function Invoices() {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListInvoicesQueryKey() });
           toast({
-            title: `Invoice paid on-chain`,
+            title: "Invoice paid on-chain",
             description: (
               <a href={`https://solscan.io/tx/${signature}`} target="_blank" rel="noopener noreferrer" className="underline text-white/70">
                 View on Solscan
@@ -103,38 +100,27 @@ export default function Invoices() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-[10px] uppercase tracking-widest text-white/40 mb-2">INVOICE LEDGER</h1>
-          {!connected && (
-            <p className="text-[10px] text-white/25 uppercase tracking-widest">Connect wallet to pay invoices on-chain</p>
-          )}
+          {!connected && <p className="text-[10px] text-white/25 uppercase tracking-widest">Connect wallet to pay invoices on-chain</p>}
         </div>
-
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <button className="bg-white text-black hover:bg-white/90 font-mono text-[11px] uppercase tracking-widest px-4 py-2 transition-colors">
-              [+ NEW INVOICE]
-            </button>
+            <button className="bg-white text-black hover:bg-white/90 font-mono text-[11px] uppercase tracking-widest px-4 py-2 transition-colors">[+ NEW INVOICE]</button>
           </DialogTrigger>
           <DialogContent className="bg-black border-white/20 text-white sm:max-w-[425px] rounded-none font-mono">
-            <DialogHeader>
-              <DialogTitle className="text-sm font-bold uppercase tracking-widest">NEW INVOICE</DialogTitle>
-            </DialogHeader>
+            <DialogHeader><DialogTitle className="text-sm font-bold uppercase tracking-widest">NEW INVOICE</DialogTitle></DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
                 <FormField control={form.control} name="title" render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-[10px] text-white/50 uppercase tracking-widest">DESCRIPTION</FormLabel>
-                    <FormControl>
-                      <input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" placeholder="Freelance Dev Work" {...field} />
-                    </FormControl>
+                    <FormControl><input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" placeholder="Freelance Dev Work" {...field} /></FormControl>
                     <FormMessage className="text-[10px] text-red-400" />
                   </FormItem>
                 )} />
                 <FormField control={form.control} name="amountAudd" render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-[10px] text-white/50 uppercase tracking-widest">AMOUNT (AUDD)</FormLabel>
-                    <FormControl>
-                      <input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" type="number" step="0.01" {...field} />
-                    </FormControl>
+                    <FormControl><input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" type="number" step="0.01" {...field} /></FormControl>
                     <FormMessage className="text-[10px] text-red-400" />
                   </FormItem>
                 )} />
@@ -142,18 +128,14 @@ export default function Invoices() {
                   <FormField control={form.control} name="recipientName" render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-[10px] text-white/50 uppercase tracking-widest">CLIENT NAME</FormLabel>
-                      <FormControl>
-                        <input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" placeholder="Acme Corp" {...field} />
-                      </FormControl>
+                      <FormControl><input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" placeholder="Acme Corp" {...field} /></FormControl>
                       <FormMessage className="text-[10px] text-red-400" />
                     </FormItem>
                   )} />
                   <FormField control={form.control} name="dueDate" render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-[10px] text-white/50 uppercase tracking-widest">DUE DATE</FormLabel>
-                      <FormControl>
-                        <input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white [color-scheme:dark]" type="date" {...field} />
-                      </FormControl>
+                      <FormControl><input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white [color-scheme:dark]" type="date" {...field} /></FormControl>
                       <FormMessage className="text-[10px] text-red-400" />
                     </FormItem>
                   )} />
@@ -161,9 +143,7 @@ export default function Invoices() {
                 <FormField control={form.control} name="recipientWallet" render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-[10px] text-white/50 uppercase tracking-widest">CLIENT WALLET</FormLabel>
-                    <FormControl>
-                      <input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" placeholder="Solana Address" {...field} />
-                    </FormControl>
+                    <FormControl><input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" placeholder="Solana Address" {...field} /></FormControl>
                     <FormMessage className="text-[10px] text-red-400" />
                   </FormItem>
                 )} />
@@ -180,9 +160,7 @@ export default function Invoices() {
 
       <div className="border border-white/10 bg-transparent overflow-hidden">
         {isLoading ? (
-          <div className="p-6 space-y-4">
-            <Skeleton className="h-10 w-full bg-white/10" />
-          </div>
+          <div className="p-6"><Skeleton className="h-10 w-full bg-white/10" /></div>
         ) : !invoices || invoices.length === 0 ? (
           <div className="py-24 text-center flex flex-col items-center justify-center">
             <div className="text-[11px] uppercase tracking-widest text-white/30">NO INVOICES YET</div>
@@ -191,12 +169,7 @@ export default function Invoices() {
           <div className="w-full overflow-x-auto">
             <div className="min-w-[800px]">
               <div className="grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_140px] gap-4 px-6 py-4 border-b border-white/10 text-[9px] uppercase tracking-widest text-white/30">
-                <div>TITLE</div>
-                <div>RECIPIENT</div>
-                <div className="text-right">AMOUNT</div>
-                <div>DUE DATE</div>
-                <div>STATUS</div>
-                <div className="text-right">ACTION</div>
+                <div>TITLE</div><div>RECIPIENT</div><div className="text-right">AMOUNT</div><div>DUE DATE</div><div>STATUS</div><div className="text-right">ACTION</div>
               </div>
               <div className="divide-y divide-white/5">
                 {invoices.map((invoice) => {
@@ -208,20 +181,12 @@ export default function Invoices() {
                         {demo && <span className="border border-yellow-500/60 text-yellow-400 text-[8px] uppercase tracking-widest px-1.5 py-0.5 flex-shrink-0">TEMPLATE</span>}
                       </div>
                       <div className="text-xs text-white/70 truncate">{invoice.recipientName}</div>
-                      <div className="text-sm font-bold text-primary tabular-nums text-right">
-                        A${invoice.amountAudd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </div>
-                      <div className="text-xs text-white/50">
-                        {invoice.dueDate ? format(new Date(invoice.dueDate), "MMM d, yyyy") : "—"}
-                      </div>
+                      <div className="text-sm font-bold text-primary tabular-nums text-right">A${invoice.amountAudd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                      <div className="text-xs text-white/50">{invoice.dueDate ? format(new Date(invoice.dueDate), "MMM d, yyyy") : "—"}</div>
                       <div>{getStatusBadge(invoice.status)}</div>
                       <div className="text-right">
                         {invoice.status !== "paid" && (
-                          <button
-                            className="text-[10px] uppercase tracking-widest text-white hover:text-primary transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                            onClick={() => handlePayInvoice(invoice)}
-                            disabled={payingId === invoice.id}
-                          >
+                          <button className="text-[10px] uppercase tracking-widest text-white hover:text-primary transition-colors disabled:opacity-40 disabled:cursor-not-allowed" onClick={() => handlePayInvoice(invoice)} disabled={payingId === invoice.id}>
                             {payLabel(invoice.id)}
                           </button>
                         )}

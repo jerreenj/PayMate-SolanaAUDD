@@ -17,9 +17,7 @@ const linkSchema = z.object({
   walletAddress: z.string().min(32, "Invalid Solana address").max(44, "Invalid Solana address"),
 });
 
-function isTemplate(link: { label?: string }) {
-  return [link.label].filter(Boolean).some(f => f!.toLowerCase().includes("demo") || f!.toLowerCase().includes("template"));
-}
+const isTemplate = (link: { slug?: string }) => link.slug?.startsWith("template") ?? false;
 
 function SolanaPayQR({ walletAddress, amountAudd, label }: { walletAddress: string; amountAudd?: number | null; label: string }) {
   const params = new URLSearchParams({ "spl-token": AUDD_MINT, label: `PayMate — ${label}` });
@@ -55,19 +53,8 @@ export default function PaymentLinks() {
     });
   };
 
-  const copyToClipboard = (text: string, label = "Copied") => {
-    navigator.clipboard.writeText(text);
-    toast({ title: label });
-  };
-
-  const handleDelete = (id: string) => {
-    deleteLink.mutate({ id }, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getListPaymentLinksQueryKey() });
-        toast({ title: "Link deleted" });
-      }
-    });
-  };
+  const copyToClipboard = (text: string, label = "Copied") => { navigator.clipboard.writeText(text); toast({ title: label }); };
+  const handleDelete = (id: string) => { deleteLink.mutate({ id }, { onSuccess: () => { queryClient.invalidateQueries({ queryKey: getListPaymentLinksQueryKey() }); toast({ title: "Link deleted" }); } }); };
 
   const selectedLink = links?.find(l => l.id === qrLinkId);
 
@@ -78,45 +65,22 @@ export default function PaymentLinks() {
           <h2 className="text-[10px] uppercase tracking-widest text-white/40 mb-1">PAYMENT LINKS</h2>
           <p className="text-xs text-white/30">Shareable Solana Pay links for instant AUDD collection</p>
         </div>
-
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <button className="bg-white text-black hover:bg-white/90 font-mono text-[11px] uppercase tracking-widest px-4 py-2 transition-colors">
-              [+ NEW LINK]
-            </button>
+            <button className="bg-white text-black hover:bg-white/90 font-mono text-[11px] uppercase tracking-widest px-4 py-2 transition-colors">[+ NEW LINK]</button>
           </DialogTrigger>
           <DialogContent className="bg-black border-white/20 text-white sm:max-w-[425px] rounded-none font-mono">
-            <DialogHeader>
-              <DialogTitle className="text-sm font-bold uppercase tracking-widest">NEW PAYMENT LINK</DialogTitle>
-            </DialogHeader>
+            <DialogHeader><DialogTitle className="text-sm font-bold uppercase tracking-widest">NEW PAYMENT LINK</DialogTitle></DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
                 <FormField control={form.control} name="label" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-[10px] text-white/50 uppercase tracking-widest">LABEL</FormLabel>
-                    <FormControl>
-                      <input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" placeholder="Coffee Fund, Invoice #42..." {...field} />
-                    </FormControl>
-                    <FormMessage className="text-[10px] text-red-400" />
-                  </FormItem>
+                  <FormItem><FormLabel className="text-[10px] text-white/50 uppercase tracking-widest">LABEL</FormLabel><FormControl><input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" placeholder="Coffee Fund, Invoice #42..." {...field} /></FormControl><FormMessage className="text-[10px] text-red-400" /></FormItem>
                 )} />
                 <FormField control={form.control} name="amountAudd" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-[10px] text-white/50 uppercase tracking-widest">FIXED AMOUNT AUDD (OPTIONAL)</FormLabel>
-                    <FormControl>
-                      <input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" type="number" step="0.01" placeholder="Leave empty for open amount" {...field} value={field.value || ''} />
-                    </FormControl>
-                    <FormMessage className="text-[10px] text-red-400" />
-                  </FormItem>
+                  <FormItem><FormLabel className="text-[10px] text-white/50 uppercase tracking-widest">FIXED AMOUNT AUDD (OPTIONAL)</FormLabel><FormControl><input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" type="number" step="0.01" placeholder="Leave empty for open amount" {...field} value={field.value || ''} /></FormControl><FormMessage className="text-[10px] text-red-400" /></FormItem>
                 )} />
                 <FormField control={form.control} name="walletAddress" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-[10px] text-white/50 uppercase tracking-widest">DESTINATION WALLET</FormLabel>
-                    <FormControl>
-                      <input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" placeholder="Solana address" {...field} />
-                    </FormControl>
-                    <FormMessage className="text-[10px] text-red-400" />
-                  </FormItem>
+                  <FormItem><FormLabel className="text-[10px] text-white/50 uppercase tracking-widest">DESTINATION WALLET</FormLabel><FormControl><input className="w-full bg-black border border-white/20 px-3 py-2 text-sm focus:outline-none focus:border-white/60 text-white" placeholder="Solana address" {...field} /></FormControl><FormMessage className="text-[10px] text-red-400" /></FormItem>
                 )} />
                 <div className="pt-4">
                   <button type="submit" disabled={createLink.isPending} className="w-full bg-white text-black hover:bg-white/90 font-mono text-[11px] uppercase tracking-widest px-4 py-3 transition-colors">
@@ -129,13 +93,10 @@ export default function PaymentLinks() {
         </Dialog>
       </div>
 
-      {/* QR Dialog */}
       {selectedLink && (
         <Dialog open={!!qrLinkId} onOpenChange={() => setQrLinkId(null)}>
           <DialogContent className="bg-black border-white/20 text-white sm:max-w-[360px] rounded-none font-mono">
-            <DialogHeader>
-              <DialogTitle className="text-sm font-bold uppercase tracking-widest">SOLANA PAY QR</DialogTitle>
-            </DialogHeader>
+            <DialogHeader><DialogTitle className="text-sm font-bold uppercase tracking-widest">SOLANA PAY QR</DialogTitle></DialogHeader>
             <div className="flex flex-col items-center gap-4 py-4">
               <div className="border border-white/20 p-3">
                 {(() => {
@@ -168,12 +129,11 @@ export default function PaymentLinks() {
             const url = `${window.location.origin}/pay/${link.slug}`;
             const demo = isTemplate(link);
             return (
-              <div key={link.id} className={`border border-white/10 p-5 flex flex-col relative transition-opacity bg-transparent ${!link.active ? "opacity-50" : ""} ${demo ? "opacity-60" : ""}`}>
+              <div key={link.id} className={`border border-white/10 p-5 flex flex-col relative bg-transparent ${!link.active ? "opacity-50" : ""} ${demo ? "opacity-60" : ""}`}>
                 <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-white/30" />
                 <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-white/30" />
                 <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-white/30" />
                 <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-white/30" />
-
                 <div className="flex justify-between items-start gap-3 mb-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
@@ -181,23 +141,14 @@ export default function PaymentLinks() {
                       {demo && <span className="border border-yellow-500/60 text-yellow-400 text-[8px] uppercase tracking-widest px-1.5 py-0.5 flex-shrink-0">TEMPLATE</span>}
                     </div>
                     <div className="flex items-center gap-3 mt-1">
-                      <span className="text-lg font-bold text-primary tabular-nums">
-                        {link.amountAudd ? `A$${link.amountAudd}` : "OPEN AMOUNT"}
-                      </span>
-                      <span className={`border px-2 py-0.5 text-[9px] uppercase tracking-widest ${link.active ? 'border-white/30 text-white/60' : 'border-white/10 text-white/30'}`}>
-                        {link.active ? 'ACTIVE' : 'INACTIVE'}
-                      </span>
+                      <span className="text-lg font-bold text-primary tabular-nums">{link.amountAudd ? `A$${link.amountAudd}` : "OPEN AMOUNT"}</span>
+                      <span className={`border px-2 py-0.5 text-[9px] uppercase tracking-widest ${link.active ? 'border-white/30 text-white/60' : 'border-white/10 text-white/30'}`}>{link.active ? 'ACTIVE' : 'INACTIVE'}</span>
                     </div>
                   </div>
-                  <button
-                    onClick={() => setQrLinkId(link.id)}
-                    className="flex-shrink-0 border border-white/20 p-1.5 hover:border-white/50 transition-colors"
-                    title="Show Solana Pay QR"
-                  >
+                  <button onClick={() => setQrLinkId(link.id)} className="flex-shrink-0 border border-white/20 p-1.5 hover:border-white/50 transition-colors">
                     <SolanaPayQR walletAddress={link.walletAddress} amountAudd={link.amountAudd} label={link.label} />
                   </button>
                 </div>
-
                 <div className="mt-auto space-y-3 pt-4 border-t border-white/5">
                   <div className="flex items-center justify-between text-[10px] text-white/40 uppercase tracking-widest">
                     <span>{link.paymentCount} PAYMENTS</span>
